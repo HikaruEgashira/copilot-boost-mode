@@ -147,7 +147,7 @@ export class GroqProvider implements vscode.LanguageModelChatProvider {
             toolChoice: toolChoice,
             tools: tools,
             abortSignal: abortController.signal,
-            experimental_toolCallStreaming: false
+            toolCallStreaming: true
         });
 
         // Listen for response parts and update the progress
@@ -176,7 +176,7 @@ export class GroqProvider implements vscode.LanguageModelChatProvider {
     provideTokenCount(text: string | vscode.LanguageModelChatMessage, token: vscode.CancellationToken): Thenable<number> {
         try {
             // TODO
-            return Promise.resolve(text.toString().length);
+            return Promise.resolve(1);
         } catch (error) {
             logger.error(`Failed to count tokens: ${error}`);
             return Promise.reject(error);
