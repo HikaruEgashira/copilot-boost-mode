@@ -1,0 +1,9 @@
+{
+  "biome.enabled": true,
+  "files.exclude": {
+    "out": false
+  },
+  "search.exclude": {
+    "out": true
+  }
+}
