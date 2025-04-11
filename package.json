@@ -1,105 +1,115 @@
 {
-	"name": "copilot-boost-mode",
-	"publisher": "HikaruEgashira",
-	"displayName": "Copilot Boost Mode",
-	"description": "Escape from copilot provider, use Anthropic API / Groq API / Gemini API",
-	"repository": {
-		"type": "git",
-		"url": "https://github.com/HikaruEgashira/copilot-boost-mode.git"
-	},
-	"engines": {
-		"vscode": "^1.98.0"
-	},
-	"version": "0.0.3",
-	"extensionDependencies": [
-		"github.copilot-chat"
-	],
-	"categories": [
-		"Other"
-	],
-	"icon": "logo.png",
-	"enabledApiProposals": [
-		"chatProvider"
-	],
-	"activationEvents": [
-		"onStartupFinished"
-	],
-	"contributes": {
-		"languageModels": {
-			"vendor": "boost"
-		},
-		"commands": [
-			{
-				"command": "copilot-boost-mode.anthropic.setKey",
-				"title": "Set Anthropic API Key"
-			},
-			{
-				"command": "copilot-boost-mode.groq.setKey",
-				"title": "Set Groq API Key"
-			},
-			{
-				"command": "copilot-boost-mode.gemini.setKey",
-				"title": "Set Gemini API Key"
-			}
-		],
-		"configuration": {
-			"copilot-boost-mode.anthropic": {
-				"type": "object",
-				"properties": {
-					"modelName": {
-						"type": "string",
-						"default": "claude-3-7-sonnet-latest",
-						"description": "The model name to use for Anthropic API."
-					}
-				}
-			},
-			"copilot-boost-mode.groq": {
-				"type": "object",
-				"properties": {
-					"modelName": {
-						"type": "string",
-						"default": "deepseek-r1-distill-llama-70b",
-						"description": "The model name to use for Groq API."
-					}
-				}
-			},
-			"copilot-boost-mode.gemini": {
-				"type": "object",
-				"properties": {
-					"modelName": {
-						"type": "string",
-						"default": "gemini-2.5-pro-exp-03-25",
-						"description": "The model name to use for Gemini API."
-					}
-				}
-			}
-		}
-	},
-	"main": "./out/extension.js",
-	"scripts": {
-		"vscode:prepublish": "npm run compile",
-		"compile": "tsc && vite build",
-		"watch": "vite build --watch",
-		"pretest": "npm run compile && npm run lint",
-		"lint": "npx @biomejs/biome check --apply ./src",
-		"test": "vscode-test",
-		"update-proposed-api": "npx vscode-dts dev",
-		"package": "bunx vsce package",
-		"local": "VERSION=$(node -p \"require('./package.json').version\") && code-insiders --install-extension ./copilot-boost-mode-$VERSION.vsix --force"
-	},
-	"devDependencies": {
-		"@biomejs/biome": "^1.9",
-		"@types/bun": "^1.2",
-		"@types/vscode": "1.98.0",
-		"typescript": "^5.8",
-		"vite": "^6"
-	},
-	"dependencies": {
-		"@ai-sdk/anthropic": "^1.2.4",
-		"@ai-sdk/google": "^1.2.5",
-		"@ai-sdk/groq": "^1.2.3",
-		"@ai-sdk/openai": "^1.3.6",
-		"@vscode/prompt-tsx-elements": "^0.1.0",
-		"ai": "^4.2.10"
-	}
+  "name": "copilot-boost-mode",
+  "publisher": "HikaruEgashira",
+  "displayName": "Copilot Boost Mode",
+  "description": "Escape from copilot provider, use Anthropic API / Groq API / Gemini API",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/HikaruEgashira/copilot-boost-mode.git"
+  },
+  "engines": {
+    "vscode": "^1.98.0"
+  },
+  "version": "0.0.3",
+  "extensionDependencies": [
+    "github.copilot-chat"
+  ],
+  "categories": [
+    "Other"
+  ],
+  "icon": "logo.png",
+  "enabledApiProposals": [
+    "chatProvider"
+  ],
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "contributes": {
+    "languageModels": {
+      "vendor": "boost"
+    },
+    "commands": [
+      {
+        "command": "copilot-boost-mode.anthropic.setKey",
+        "title": "Set Anthropic API Key"
+      },
+      {
+        "command": "copilot-boost-mode.groq.setKey",
+        "title": "Set Groq API Key"
+      },
+      {
+        "command": "copilot-boost-mode.gemini.setKey",
+        "title": "Set Gemini API Key"
+      }
+    ],
+    "configuration": {
+      "copilot-boost-mode.anthropic": {
+        "type": "object",
+        "properties": {
+          "modelName": {
+            "type": "string",
+            "default": "claude-3-7-sonnet-latest",
+            "description": "The model name to use for Anthropic API."
+          }
+        }
+      },
+      "copilot-boost-mode.groq": {
+        "type": "object",
+        "properties": {
+          "modelName": {
+            "type": "string",
+            "default": "deepseek-r1-distill-llama-70b",
+            "description": "The model name to use for Groq API."
+          }
+        }
+      },
+      "copilot-boost-mode.gemini": {
+        "type": "object",
+        "properties": {
+          "modelName": {
+            "type": "string",
+            "default": "gemini-2.5-pro-exp-03-25",
+            "description": "The model name to use for Gemini API."
+          }
+        }
+      },
+      "copilot-boost-mode.openrouter": {
+        "type": "object",
+        "properties": {
+          "modelName": {
+            "type": "string",
+            "default": "openrouter/optimus-alpha",
+            "description": "The model name to use for OpenRouter API."
+          }
+        }
+      }
+    }
+  },
+  "main": "./out/extension.js",
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc && vite build",
+    "watch": "vite build --watch",
+    "pretest": "npm run compile && npm run lint",
+    "lint": "npx @biomejs/biome check --apply ./src",
+    "test": "vscode-test",
+    "update-proposed-api": "npx vscode-dts dev",
+    "package": "bunx vsce package",
+    "local": "VERSION=$(node -p \"require('./package.json').version\") && code-insiders --install-extension ./copilot-boost-mode-$VERSION.vsix --force"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^1.9",
+    "@types/bun": "^1.2",
+    "@types/vscode": "1.98.0",
+    "typescript": "^5.8",
+    "vite": "^6"
+  },
+  "dependencies": {
+    "@ai-sdk/anthropic": "^1.2.4",
+    "@ai-sdk/google": "^1.2.5",
+    "@ai-sdk/groq": "^1.2.3",
+    "@ai-sdk/openai": "^1.3.6",
+    "@vscode/prompt-tsx-elements": "^0.1.0",
+    "ai": "^4.2.10"
+  }
 }

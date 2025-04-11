@@ -3,15 +3,18 @@ import * as vscode from "vscode";
 import { AnthropicProvider } from "./providers/anthropic";
 import { GroqProvider } from "./providers/groq";
 import { GeminiProvider } from "./providers/gemini";
+import { OpenRouterProvider } from "./providers/openrouter";
 
 const apiKeyAnthropic = "AnthropicCopilotBoostApiKey";
 const apiKeyGroq = "GroqCopilotBoostApiKey";
 const apiKeyGemini = "GeminiCopilotBoostApiKey";
+const apiKeyOpenRouter = "OpenRouterCopilotBoostApiKey";
 
 export async function activate(context: vscode.ExtensionContext) {
   const AnthropicApiKey = await context.secrets.get(apiKeyAnthropic);
   const groqApiKey = await context.secrets.get(apiKeyGroq);
   const geminiApiKey = await context.secrets.get(apiKeyGemini);
+  const openrouterApiKey = await context.secrets.get(apiKeyOpenRouter);
 
   // API Key
   context.subscriptions.push(
@@ -23,11 +26,15 @@ export async function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(
     vscode.commands.registerCommand("copilot-boost-mode.gemini.setKey", () => setApiKey(context, apiKeyGemini))
   );
+  context.subscriptions.push(
+    vscode.commands.registerCommand("copilot-boost-mode.openrouter.setKey", () => setApiKey(context, apiKeyOpenRouter))
+  );
 
   // Create boostProvider with API Key
   const Anthropic = new AnthropicProvider(AnthropicApiKey);
   const groq = new GroqProvider(groqApiKey);
   const gemini = new GeminiProvider(geminiApiKey);
+  const openrouter = new OpenRouterProvider(openrouterApiKey);
 
   // Register the providers
   const AnthropicDisposable = vscode.lm.registerChatModelProvider(
@@ -92,6 +99,27 @@ export async function activate(context: vscode.ExtensionContext) {
     }
   )
   context.subscriptions.push(geminiDisposable)
+
+  const openrouterDisposable = vscode.lm.registerChatModelProvider(
+    "openrouter",
+    openrouter,
+    {
+      vendor: "boost",
+      name: "OpenRouter",
+      family: "boost",
+      version: "1.0.0",
+      maxInputTokens: 200000,
+      maxOutputTokens: 8192,
+      isDefault: true,
+      isUserSelectable: true,
+      capabilities: {
+        agentMode: true,
+        toolCalling: true,
+        vision: true
+      }
+    }
+  );
+  context.subscriptions.push(openrouterDisposable);
 }
 
 async function setApiKey(context: vscode.ExtensionContext, key: string) {
