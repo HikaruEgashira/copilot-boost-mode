@@ -10,7 +10,7 @@
   "engines": {
     "vscode": "^1.98.0"
   },
-  "version": "0.0.3",
+  "version": "0.0.4",
   "extensionDependencies": [
     "github.copilot-chat"
   ],
