@@ -2,11 +2,13 @@
 
 Escape from Copilot provider
 
-### Install
+## Setup
 
-```sh
-asdf install
-bun install
-bun package
-code --install-extension copilot-boost-mode-0.1.0.vsix 
-```
+If you'd like to set it so that your extension using the proposed API is always available to use on every launch of VS Code Insiders, you can run the Preferences: Configure Runtime Arguments command to edit the .vscode-insiders/argv.json file to set a list of enabled extensions.
+
+{
+    ...
+    "enable-proposed-api": ["HikaruEgashira.copilot-boost-mode"]
+}
+
+https://code.visualstudio.com/api/advanced-topics/using-proposed-api#sharing-extensions-using-the-proposed-api

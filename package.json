@@ -2,7 +2,7 @@
   "name": "copilot-boost-mode",
   "publisher": "HikaruEgashira",
   "displayName": "Copilot Boost Mode",
-  "description": "Escape from copilot provider, use Anthropic API / Groq API / Gemini API",
+  "description": "Escape from copilot provider, use Anthropic API / Groq API / Gemini API / OpenRouter API / OpenAI API",
   "repository": {
     "type": "git",
     "url": "https://github.com/HikaruEgashira/copilot-boost-mode.git"
@@ -10,7 +10,7 @@
   "engines": {
     "vscode": "^1.98.0"
   },
-  "version": "0.0.4",
+  "version": "0.0.5",
   "extensionDependencies": [
     "github.copilot-chat"
   ],
@@ -40,6 +40,10 @@
       {
         "command": "copilot-boost-mode.gemini.setKey",
         "title": "Set Gemini API Key"
+      },
+      {
+        "command": "copilot-boost-mode.openai.setKey",
+        "title": "Set OpenAI API Key"
       }
     ],
     "configuration": {
@@ -81,6 +85,21 @@
             "default": "openrouter/optimus-alpha",
             "description": "The model name to use for OpenRouter API."
           }
+        }
+      }
+    },
+    "copilot-boost-mode.openai": {
+      "type": "object",
+      "properties": {
+        "modelName": {
+          "type": "string",
+          "default": "gpt-4.1-2025-04-14",
+          "description": "The model name to use for OpenAI API."
+        },
+        "baseURL": {
+          "type": "string",
+          "default": "",
+          "description": "The base URL for the OpenAI API. Leave empty to use the default OpenAI URL."
         }
       }
     }
