@@ -13,6 +13,7 @@ const apiKeyOpenRouter = "OpenRouterCopilotBoostApiKey";
 const apiKeyOpenAI = "OpenAICopilotBoostApiKey";
 
 export async function activate(context: vscode.ExtensionContext) {
+  console.log("Copilot Boost Mode extension is being activated");
   const AnthropicApiKey = await context.secrets.get(apiKeyAnthropic);
   const groqApiKey = await context.secrets.get(apiKeyGroq);
   const geminiApiKey = await context.secrets.get(apiKeyGemini);
@@ -20,6 +21,7 @@ export async function activate(context: vscode.ExtensionContext) {
   const openaiApiKey = await context.secrets.get(apiKeyOpenAI);
 
   // API Key
+  console.log("Registering command: copilot-boost-mode.anthropic.setKey");
   context.subscriptions.push(
     vscode.commands.registerCommand("copilot-boost-mode.anthropic.setKey", () => setApiKey(context, apiKeyAnthropic))
   );
@@ -133,6 +135,7 @@ export async function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(openaiDisposable);
 
   // Test commands have been moved to test files
+  console.log("Copilot Boost Mode activation completed successfully");
 }
 
 async function setApiKey(context: vscode.ExtensionContext, key: string) {
