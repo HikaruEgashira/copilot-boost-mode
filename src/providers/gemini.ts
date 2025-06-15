@@ -1,8 +1,8 @@
 import { createGoogleGenerativeAI } from "@ai-sdk/google";
-import { type Tool, jsonSchema, streamText } from "ai";
+import { streamText } from "ai";
 import * as vscode from "vscode";
 import { logger } from "../logger";
-import { convertChatToCoreMessage } from "./util";
+import { convertChatToCoreMessage, createGeminiToolName, logToolConfiguration, processTools } from "./util";
 
 export class GeminiProvider implements vscode.LanguageModelChatProvider {
   apiKey: string | undefined;
@@ -51,28 +51,8 @@ export class GeminiProvider implements vscode.LanguageModelChatProvider {
     const abortController = new AbortController();
     token.onCancellationRequested(() => abortController.abort());
 
-    // Convert the tool configuration to a dictionary of tools
-    const tools: Record<string, Tool> = {};
-    for (const tool of options.tools || []) {
-      // Gemini APIの関数名制約に対応するための変換
-      // 文字またはアンダースコアで始まり、英数字、アンダースコア、ドット、ダッシュのみを含む必要がある
-      const sanitizedName = tool.name.replace(/[^a-zA-Z0-9_.-]/g, "_");
-      const validToolName = /^[a-zA-Z_]/.test(sanitizedName) ? sanitizedName : `_${sanitizedName}`;
-
-      // 最大長は64文字
-      const truncatedName = validToolName.substring(0, 64);
-
-      tools[truncatedName] = {
-        // biome-ignore lint/suspicious/noExplicitAny: <explanation>
-        parameters: jsonSchema(tool.inputSchema as any),
-        description: tool.description,
-      };
-
-      // 元の名前と変換後の名前のマッピングをログに記録（デバッグ用）
-      if (truncatedName !== tool.name) {
-        logger.info(`Tool name converted: "${tool.name}" -> "${truncatedName}"`);
-      }
-    }
+    // Process tools with Gemini-specific name sanitization
+    const { tools, hasTools } = processTools(options, "Gemini", createGeminiToolName);
 
     // Determine the tool choice based on the tool mode
     let toolChoice: "auto" | "required" | undefined = undefined;
@@ -88,33 +68,50 @@ export class GeminiProvider implements vscode.LanguageModelChatProvider {
       apiKey: this.apiKey,
     });
 
-    const { fullStream } = streamText({
-      model: gemini(modelName),
-      messages: boostMessages,
-      toolChoice: toolChoice,
-      tools: tools,
-      abortSignal: abortController.signal,
+    // Log configuration for debugging
+    logToolConfiguration("Gemini", hasTools, tools, modelName, toolChoice, {
       toolCallStreaming: true,
     });
 
+    const streamConfig = {
+      model: gemini(modelName),
+      messages: boostMessages,
+      toolChoice: hasTools ? toolChoice : undefined,
+      tools: hasTools ? tools : undefined,
+      abortSignal: abortController.signal,
+      toolCallStreaming: true,
+    };
+
+    logger.log(`[Gemini] Stream config: ${JSON.stringify({ ...streamConfig, messages: "omitted", model: "omitted" })}`);
+
+    const { fullStream } = streamText(streamConfig);
+
     // Listen for response parts and update the progress
-    for await (const part of fullStream) {
-      if (part.type === "text-delta") {
-        progress.report({
-          index: 0,
-          part: new vscode.LanguageModelTextPart(part.textDelta),
-        });
-        logger.info(`boostProvider: ${part.textDelta}`);
-      } else if (part.type === "tool-call") {
-        progress.report({
-          index: 0,
-          part: new vscode.LanguageModelToolCallPart(part.toolCallId, part.toolName, part.args),
-        });
-      } else if (part.type === "step-finish") {
-      } else if (part.type === "finish") {
-      } else if (part.type === "error") {
-        throw part.error;
+    try {
+      for await (const part of fullStream) {
+        if (part.type === "text-delta") {
+          progress.report({
+            index: 0,
+            part: new vscode.LanguageModelTextPart(part.textDelta),
+          });
+          logger.info(`boostProvider: ${part.textDelta}`);
+        } else if (part.type === "tool-call") {
+          progress.report({
+            index: 0,
+            part: new vscode.LanguageModelToolCallPart(part.toolCallId, part.toolName, part.args),
+          });
+        } else if (part.type === "step-finish") {
+        } else if (part.type === "finish") {
+        } else if (part.type === "error") {
+          throw part.error;
+        }
       }
+    } catch (streamError) {
+      logger.error("[Gemini] streaming error:", streamError);
+      if (streamError instanceof Error && streamError.cause) {
+        logger.error("[Gemini] Streaming error cause:", JSON.stringify(streamError.cause, null, 2));
+      }
+      throw streamError;
     }
   }
 

@@ -1,8 +1,8 @@
 import { createOpenAI } from "@ai-sdk/openai";
-import { type Tool, jsonSchema, streamText } from "ai";
+import { streamText } from "ai";
 import * as vscode from "vscode";
 import { logger } from "../logger";
-import { convertChatToCoreMessage } from "./util";
+import { convertChatToCoreMessage, logToolConfiguration, processTools } from "./util";
 
 export class OpenRouterProvider implements vscode.LanguageModelChatProvider {
   apiKey: string | undefined;
@@ -51,15 +51,8 @@ export class OpenRouterProvider implements vscode.LanguageModelChatProvider {
     const abortController = new AbortController();
     token.onCancellationRequested(() => abortController.abort());
 
-    // ツール構成
-    const tools: Record<string, Tool> = {};
-    for (const tool of options.tools || []) {
-      tools[tool.name] = {
-        // biome-ignore lint/suspicious/noExplicitAny: <explanation>
-        parameters: jsonSchema(tool.inputSchema as any),
-        description: tool.description,
-      };
-    }
+    // Process tools with consistent validation and error handling
+    const { tools, hasTools } = processTools(options, "OpenRouter");
 
     // toolChoice
     let toolChoice: "auto" | "required" | undefined = undefined;
@@ -76,32 +69,53 @@ export class OpenRouterProvider implements vscode.LanguageModelChatProvider {
       baseURL: "https://openrouter.ai/api/v1",
     });
 
-    const { fullStream } = streamText({
-      model: openai(modelName),
-      messages: boostMessages,
-      toolChoice: toolChoice,
-      tools: tools,
-      abortSignal: abortController.signal,
+    // Log configuration for debugging
+    logToolConfiguration("OpenRouter", hasTools, tools, modelName, toolChoice, {
       toolCallStreaming: false,
+      baseURL: "https://openrouter.ai/api/v1",
     });
 
-    for await (const part of fullStream) {
-      if (part.type === "text-delta") {
-        progress.report({
-          index: 0,
-          part: new vscode.LanguageModelTextPart(part.textDelta),
-        });
-        logger.info(`[OpenRouter] text-delta: ${part.textDelta}`);
-      } else if (part.type === "tool-call") {
-        progress.report({
-          index: 0,
-          part: new vscode.LanguageModelToolCallPart(part.toolCallId, part.toolName, part.args),
-        });
-      } else if (part.type === "step-finish") {
-      } else if (part.type === "finish") {
-      } else if (part.type === "error") {
-        throw part.error;
+    const streamConfig = {
+      model: openai(modelName),
+      messages: boostMessages,
+      toolChoice: hasTools ? toolChoice : undefined,
+      tools: hasTools ? tools : undefined,
+      abortSignal: abortController.signal,
+      toolCallStreaming: false,
+    };
+
+    logger.log(
+      `[OpenRouter] Stream config: ${JSON.stringify({ ...streamConfig, messages: "omitted", model: "omitted" })}`,
+    );
+
+    const { fullStream } = streamText(streamConfig);
+
+    // Listen for response parts and update the progress
+    try {
+      for await (const part of fullStream) {
+        if (part.type === "text-delta") {
+          progress.report({
+            index: 0,
+            part: new vscode.LanguageModelTextPart(part.textDelta),
+          });
+          logger.info(`boostProvider: ${part.textDelta}`);
+        } else if (part.type === "tool-call") {
+          progress.report({
+            index: 0,
+            part: new vscode.LanguageModelToolCallPart(part.toolCallId, part.toolName, part.args),
+          });
+        } else if (part.type === "step-finish") {
+        } else if (part.type === "finish") {
+        } else if (part.type === "error") {
+          throw part.error;
+        }
       }
+    } catch (streamError) {
+      logger.error("[OpenRouter] streaming error:", streamError);
+      if (streamError instanceof Error && streamError.cause) {
+        logger.error("[OpenRouter] Streaming error cause:", JSON.stringify(streamError.cause, null, 2));
+      }
+      throw streamError;
     }
   }
 

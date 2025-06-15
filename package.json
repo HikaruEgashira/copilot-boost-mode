@@ -44,6 +44,10 @@
       {
         "command": "copilot-boost-mode.openai.setKey",
         "title": "Set OpenAI API Key"
+      },
+      {
+        "command": "copilot-boost-mode.anthropic.setClaudeCodeKey",
+        "title": "Set Claude Code API Key from Keychain"
       }
     ],
     "configuration": {

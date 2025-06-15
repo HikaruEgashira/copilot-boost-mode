@@ -9,7 +9,7 @@ export default defineConfig({
       entry: "./src/extension.ts",
     },
     rollupOptions: {
-      external: ["vscode"],
+      external: ["vscode", "node:child_process", "child_process"],
       input: {
         extension: path.resolve(__dirname, "src/extension.ts"),
       },

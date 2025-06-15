@@ -35,6 +35,9 @@ export async function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(
     vscode.commands.registerCommand("copilot-boost-mode.openai.setKey", () => setApiKey(context, apiKeyOpenAI)),
   );
+  context.subscriptions.push(
+    vscode.commands.registerCommand("copilot-boost-mode.anthropic.setClaudeCodeKey", () => setClaudeCodeKey(context)),
+  );
 
   // Create boostProvider with API Key
   const Anthropic = new AnthropicProvider(AnthropicApiKey);
@@ -141,6 +144,47 @@ async function setApiKey(context: vscode.ExtensionContext, key: string) {
   }
 
   return await context.secrets.get(key);
+}
+
+async function setClaudeCodeKey(context: vscode.ExtensionContext) {
+  // Check if running on macOS
+  if (process.platform !== "darwin") {
+    vscode.window.showErrorMessage("This command is only available on macOS");
+    return;
+  }
+
+  try {
+    // Dynamic import for Node.js specific modules
+    const { execSync } = await import("node:child_process");
+
+    // Get the keychain data
+    const keychainData = execSync('security find-generic-password -s "Claude Code-credentials" -w', {
+      encoding: "utf8",
+    }).trim();
+
+    if (!keychainData) {
+      vscode.window.showErrorMessage("Could not retrieve Claude Code credentials from Keychain");
+      return;
+    }
+
+    // Parse the JSON to extract the access token
+    const parsedData = JSON.parse(keychainData);
+    const accessToken = parsedData?.claudeAiOauth?.accessToken;
+
+    if (!accessToken || accessToken === "null") {
+      vscode.window.showErrorMessage("Could not parse Anthropic API key from Keychain data");
+      return;
+    }
+
+    // Store the token
+    await context.secrets.store(apiKeyAnthropic, accessToken);
+    vscode.window.showInformationMessage("Claude Code API key set successfully from Keychain");
+
+    return accessToken;
+  } catch (error) {
+    vscode.window.showErrorMessage(`Error retrieving Claude Code API key: ${error}`);
+    return null;
+  }
 }
 
 export function deactivate(context: vscode.ExtensionContext) {

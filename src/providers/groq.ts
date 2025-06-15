@@ -1,8 +1,8 @@
 import { createGroq } from "@ai-sdk/groq";
-import { AssistantContent, CoreMessage, TextPart, type Tool, ToolResultPart, jsonSchema, streamText } from "ai";
+import { streamText } from "ai";
 import * as vscode from "vscode";
 import { logger } from "../logger";
-import { convertChatToCoreMessage } from "./util";
+import { convertChatToCoreMessage, logToolConfiguration, processTools } from "./util";
 
 export class GroqProvider implements vscode.LanguageModelChatProvider {
   apiKey: string | undefined;
@@ -51,15 +51,8 @@ export class GroqProvider implements vscode.LanguageModelChatProvider {
     const abortController = new AbortController();
     token.onCancellationRequested(() => abortController.abort());
 
-    // Convert the tool configuration to a dictionary of tools
-    const tools: Record<string, Tool> = {};
-    for (const tool of options.tools || []) {
-      tools[tool.name] = {
-        // biome-ignore lint/suspicious/noExplicitAny: <explanation>
-        parameters: jsonSchema(tool.inputSchema as any),
-        description: tool.description,
-      };
-    }
+    // Process tools with consistent validation and error handling
+    const { tools, hasTools } = processTools(options, "Groq");
 
     // Determine the tool choice based on the tool mode
     let toolChoice: "auto" | "required" | undefined = undefined;
@@ -71,37 +64,54 @@ export class GroqProvider implements vscode.LanguageModelChatProvider {
 
     const boostMessages = messages.map(convertChatToCoreMessage);
 
-    const openai = createGroq({
+    const groq = createGroq({
       apiKey: this.apiKey,
     });
 
-    const { fullStream } = streamText({
-      model: openai(modelName),
-      messages: boostMessages,
-      toolChoice: toolChoice,
-      tools: tools,
-      abortSignal: abortController.signal,
+    // Log configuration for debugging
+    logToolConfiguration("Groq", hasTools, tools, modelName, toolChoice, {
       toolCallStreaming: true,
     });
 
+    const streamConfig = {
+      model: groq(modelName),
+      messages: boostMessages,
+      toolChoice: hasTools ? toolChoice : undefined,
+      tools: hasTools ? tools : undefined,
+      abortSignal: abortController.signal,
+      toolCallStreaming: true,
+    };
+
+    logger.log(`[Groq] Stream config: ${JSON.stringify({ ...streamConfig, messages: "omitted", model: "omitted" })}`);
+
+    const { fullStream } = streamText(streamConfig);
+
     // Listen for response parts and update the progress
-    for await (const part of fullStream) {
-      if (part.type === "text-delta") {
-        progress.report({
-          index: 0,
-          part: new vscode.LanguageModelTextPart(part.textDelta),
-        });
-        logger.info(`boostProvider: ${part.textDelta}`);
-      } else if (part.type === "tool-call") {
-        progress.report({
-          index: 0,
-          part: new vscode.LanguageModelToolCallPart(part.toolCallId, part.toolName, part.args),
-        });
-      } else if (part.type === "step-finish") {
-      } else if (part.type === "finish") {
-      } else if (part.type === "error") {
-        throw part.error;
+    try {
+      for await (const part of fullStream) {
+        if (part.type === "text-delta") {
+          progress.report({
+            index: 0,
+            part: new vscode.LanguageModelTextPart(part.textDelta),
+          });
+          logger.info(`boostProvider: ${part.textDelta}`);
+        } else if (part.type === "tool-call") {
+          progress.report({
+            index: 0,
+            part: new vscode.LanguageModelToolCallPart(part.toolCallId, part.toolName, part.args),
+          });
+        } else if (part.type === "step-finish") {
+        } else if (part.type === "finish") {
+        } else if (part.type === "error") {
+          throw part.error;
+        }
       }
+    } catch (streamError) {
+      logger.error("[Groq] streaming error:", streamError);
+      if (streamError instanceof Error && streamError.cause) {
+        logger.error("[Groq] Streaming error cause:", JSON.stringify(streamError.cause, null, 2));
+      }
+      throw streamError;
     }
   }
 
