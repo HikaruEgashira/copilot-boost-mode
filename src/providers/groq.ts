@@ -1,5 +1,5 @@
 import { createGroq } from "@ai-sdk/groq";
-import { AssistantContent, CoreMessage, jsonSchema, streamText, TextPart, type Tool, ToolResultPart } from "ai";
+import { AssistantContent, CoreMessage, TextPart, type Tool, ToolResultPart, jsonSchema, streamText } from "ai";
 import * as vscode from "vscode";
 import { logger } from "../logger";
 import { convertChatToCoreMessage } from "./util";

@@ -1,5 +1,5 @@
 import { createOpenAI } from "@ai-sdk/openai";
-import { jsonSchema, streamText, type Tool } from "ai";
+import { type Tool, jsonSchema, streamText } from "ai";
 import * as vscode from "vscode";
 import { logger } from "../logger";
 import { convertChatToCoreMessage } from "./util";
@@ -82,7 +82,7 @@ export class OpenRouterProvider implements vscode.LanguageModelChatProvider {
       toolChoice: toolChoice,
       tools: tools,
       abortSignal: abortController.signal,
-      toolCallStreaming: true,
+      toolCallStreaming: false,
     });
 
     for await (const part of fullStream) {

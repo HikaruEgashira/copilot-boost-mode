@@ -86,20 +86,20 @@
             "description": "The model name to use for OpenRouter API."
           }
         }
-      }
-    },
-    "copilot-boost-mode.openai": {
-      "type": "object",
-      "properties": {
-        "modelName": {
-          "type": "string",
-          "default": "gpt-4.1-2025-04-14",
-          "description": "The model name to use for OpenAI API."
-        },
-        "baseURL": {
-          "type": "string",
-          "default": "",
-          "description": "The base URL for the OpenAI API. Leave empty to use the default OpenAI URL."
+      },
+      "copilot-boost-mode.openai": {
+        "type": "object",
+        "properties": {
+          "modelName": {
+            "type": "string",
+            "default": "gpt-4.1-2025-04-14",
+            "description": "The model name to use for OpenAI API."
+          },
+          "baseURL": {
+            "type": "string",
+            "default": "",
+            "description": "The base URL for the OpenAI API. Leave empty to use the default OpenAI URL."
+          }
         }
       }
     }
@@ -110,7 +110,7 @@
     "compile": "tsc && vite build",
     "watch": "vite build --watch",
     "pretest": "npm run compile && npm run lint",
-    "lint": "npx @biomejs/biome check --apply ./src",
+    "lint": "npx @biomejs/biome check --write ./src",
     "test": "vscode-test",
     "update-proposed-api": "npx vscode-dts dev",
     "package": "bunx vsce package",
@@ -119,7 +119,7 @@
   "devDependencies": {
     "@biomejs/biome": "^1.9",
     "@types/bun": "^1.2",
-    "@types/vscode": "1.98.0",
+    "@types/vscode": "1.101",
     "typescript": "^5.8",
     "vite": "^6"
   },

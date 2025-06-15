@@ -1,5 +1,5 @@
 import { createGoogleGenerativeAI } from "@ai-sdk/google";
-import { jsonSchema, streamText, type Tool } from "ai";
+import { type Tool, jsonSchema, streamText } from "ai";
 import * as vscode from "vscode";
 import { logger } from "../logger";
 import { convertChatToCoreMessage } from "./util";

@@ -1,11 +1,16 @@
-import type { CoreMessage, ToolResultPart, TextPart, AssistantContent } from "ai";
+import type { AssistantContent, CoreMessage, TextPart, ToolResultPart } from "ai";
 import * as vscode from "vscode";
 import { logger } from "../logger";
 
 function isLanguageModelToolResultPart(
   part: vscode.LanguageModelTextPart | vscode.LanguageModelToolResultPart | vscode.LanguageModelToolCallPart,
 ): part is vscode.LanguageModelToolResultPart {
-  return "callId" in part && "content" in part;
+  let _toolResultPart: vscode.LanguageModelToolResultPart
+  if ("callId" in part && "content" in part) {
+    _toolResultPart = part as vscode.LanguageModelToolResultPart;
+    return true;
+  }
+  return false;
 }
 
 export const convertChatToCoreMessage = (message: vscode.LanguageModelChatMessage): CoreMessage => {
