@@ -5,10 +5,14 @@ import { logger } from "../logger";
 import { convertChatToCoreMessage, logToolConfiguration, processTools } from "./util";
 
 export class AnthropicProvider implements vscode.LanguageModelChatProvider {
-  apiKey: string | undefined;
+  private context: vscode.ExtensionContext;
 
-  constructor(apiKey: string | undefined) {
-    this.apiKey = apiKey;
+  constructor(context: vscode.ExtensionContext) {
+    this.context = context;
+  }
+
+  private async getApiKey(): Promise<string | undefined> {
+    return await this.context.secrets.get("AnthropicCopilotBoostApiKey");
   }
 
   private showApiKeyError(message: string): Error {
@@ -39,7 +43,19 @@ export class AnthropicProvider implements vscode.LanguageModelChatProvider {
     token: vscode.CancellationToken
     // biome-ignore lint/suspicious/noExplicitAny: <explanation>
   ): Promise<any> {
-    if (!this.apiKey) {
+    let apiKey = await this.getApiKey();
+
+    // TEST MODE: Check for environment variable if no stored API key
+    if (!apiKey && process.env.ANTHROPIC_API_KEY) {
+      apiKey = process.env.ANTHROPIC_API_KEY;
+    }
+
+    // TEST MODE: Allow mock API key for testing tool calling functionality
+    if (!apiKey && process.env.VSCODE_EXTENSION_UNDER_TEST === "true") {
+      apiKey = "sk-ant-test-mock-key-for-tool-calling-e2e-tests-12345";
+    }
+
+    if (!apiKey) {
       const setKeyMessage = "No API key set. Please set your API key in the settings.";
       throw this.showApiKeyError(setKeyMessage);
     }
@@ -65,7 +81,7 @@ export class AnthropicProvider implements vscode.LanguageModelChatProvider {
     const boostMessages = messages.map(convertChatToCoreMessage);
 
     const anthropic = createAnthropic({
-      apiKey: this.apiKey,
+      apiKey: apiKey,
       headers: {
         "User-Agent": "claude-cli/1.0.24 (external, sdk-cli)",
         "anthropic-beta":
