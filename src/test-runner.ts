@@ -23,19 +23,15 @@ export class TestRunner {
 
   private async testModelSelection(): Promise<void> {
     try {
-      // Test selecting all models
       const allModels = await vscode.lm.selectChatModels();
       this.addResult("Model Selection - All Models", "PASS", `Found ${allModels.length} total models`);
 
-      // Test selecting boost models
       const boostModels = await vscode.lm.selectChatModels({ vendor: "boost" });
       this.addResult("Model Selection - Boost Models", "PASS", `Found ${boostModels.length} boost models`);
 
-      // Test selecting by family
       const familyModels = await vscode.lm.selectChatModels({ family: "boost" });
       this.addResult("Model Selection - Family Filter", "PASS", `Found ${familyModels.length} models in boost family`);
 
-      // List available models
       if (boostModels.length > 0) {
         const modelInfo = boostModels.map(m => `${m.name} (${m.id})`).join(", ");
         this.addResult("Available Models", "PASS", `Models: ${modelInfo}`);
@@ -137,7 +133,6 @@ export class TestRunner {
         this.addResult("Provider Registration", "FAIL", "No expected providers found");
       }
 
-      // Test individual provider capabilities
       for (const model of boostModels) {
         const hasBasicInfo = model.name && model.id && model.vendor && model.family;
         if (hasBasicInfo) {
@@ -177,7 +172,6 @@ export class TestRunner {
       vscode.window.showWarningMessage(`⚠️ ${failCount}/${total} tests failed. Check output for details.`);
     }
 
-    // Detailed results
     logger.log(`\n=== DETAILED RESULTS ===`);
     for (const result of this.results) {
       const icon = result.status === "PASS" ? "✓" : "✗";

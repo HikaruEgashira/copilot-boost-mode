@@ -31,7 +31,6 @@ export async function testLanguageModel() {
 
 async function testModel(model: vscode.LanguageModelChat) {
   try {
-    // Test basic chat functionality
     const messages = [
       new vscode.LanguageModelChatMessage(
         vscode.LanguageModelChatMessageRole.User,
@@ -39,13 +38,11 @@ async function testModel(model: vscode.LanguageModelChat) {
       ),
     ];
 
-    // Create a cancellation token
     const tokenSource = new vscode.CancellationTokenSource();
     const token = tokenSource.token;
 
     logger.log(`Sending request to ${model.name}...`);
 
-    // Send request to the model
     const request = await model.sendRequest(messages, {}, token);
 
     let response = "";
@@ -55,12 +52,10 @@ async function testModel(model: vscode.LanguageModelChat) {
 
     logger.log(`Response from ${model.name}: ${response.trim()}`);
 
-    // Test with tools if supported (check via id since capabilities might not be available)
     if (model.id.includes("anthropic") || model.id.includes("openai") || model.id.includes("groq")) {
       await testModelWithTools(model);
     }
 
-    // Clean up
     tokenSource.dispose();
 
   } catch (error) {
@@ -72,7 +67,6 @@ async function testModelWithTools(model: vscode.LanguageModelChat) {
   try {
     logger.log(`Testing ${model.name} with tools...`);
 
-    // Define a simple test tool
     const testTool: vscode.LanguageModelChatTool = {
       name: "get_current_time",
       description: "Get the current time",
@@ -120,28 +114,23 @@ async function testModelWithTools(model: vscode.LanguageModelChat) {
   }
 }
 
-// Test model selection and filtering
 export async function testModelSelection() {
   try {
     logger.log("Testing model selection...");
 
-    // Test selecting all models
     const allModels = await vscode.lm.selectChatModels();
     logger.log(`Total available models: ${allModels.length}`);
 
-    // Test selecting boost models specifically
     const boostModels = await vscode.lm.selectChatModels({
       vendor: "boost",
     });
     logger.log(`Boost models available: ${boostModels.length}`);
 
-    // Test selecting by family
     const familyModels = await vscode.lm.selectChatModels({
       family: "boost",
     });
     logger.log(`Models in boost family: ${familyModels.length}`);
 
-    // List all boost models with their details
     for (const model of boostModels) {
       logger.log(`Model: ${model.name} (${model.id})`);
       logger.log(`  Vendor: ${model.vendor}`);
@@ -155,7 +144,6 @@ export async function testModelSelection() {
   }
 }
 
-// Command to run the tests
 export function registerTestCommands(context: vscode.ExtensionContext) {
   context.subscriptions.push(
     vscode.commands.registerCommand("copilot-boost-mode.test.languageModel", testLanguageModel)

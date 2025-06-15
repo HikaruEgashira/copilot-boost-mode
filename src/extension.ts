@@ -134,7 +134,6 @@ export async function activate(context: vscode.ExtensionContext) {
   });
   context.subscriptions.push(openaiDisposable);
 
-  // Register test commands
   registerTestCommands(context);
   registerTestRunner(context);
 }
