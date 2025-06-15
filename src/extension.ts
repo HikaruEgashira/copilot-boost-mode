@@ -136,6 +136,9 @@ export async function activate(context: vscode.ExtensionContext) {
 
   // Test commands have been moved to test files
   console.log("Copilot Boost Mode activation completed successfully");
+
+  // Export context for testing
+  return { context };
 }
 
 async function setApiKey(context: vscode.ExtensionContext, key: string) {
