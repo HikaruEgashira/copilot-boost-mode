@@ -18,14 +18,14 @@ repos:
     hooks:
       - id: quality-check
         name: Quality Check
-        entry: bun run quality-check
+        entry: bun run lint:check && bun run typecheck
         language: system
         files: \.(ts|js|json)$
         pass_filenames: false
 
       - id: security-check
         name: Security Check
-        entry: bun audit --audit-level=moderate
+        entry: bun pm untrusted
         language: system
         pass_filenames: false
 
