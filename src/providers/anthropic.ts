@@ -66,6 +66,10 @@ export class AnthropicProvider implements vscode.LanguageModelChatProvider {
 
     const anthropic = createAnthropic({
       apiKey: this.apiKey,
+      headers: {
+        "User-Agent": "claude-cli/1.0.24 (external, sdk-cli)",
+        "anthropic-beta": "claude-code-20250219,oauth-2025-04-20,interleaved-thinking-2025-05-14,fine-grained-tool-streaming-2025-05-14"
+      }
     });
 
     // Log configuration for debugging
