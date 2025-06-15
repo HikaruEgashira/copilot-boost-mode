@@ -1,7 +1,8 @@
 {
   "$schema": "https://biomejs.dev/schemas/1.8.3/schema.json",
   "files": {
-    "include": ["src/*.ts", "src/*.tsx"]
+    "include": ["src/**/*.ts", "src/**/*.tsx", "tests/**/*.ts"],
+    "ignore": ["node_modules/**", "out/**", "*.d.ts", "coverage/**"]
   },
   "organizeImports": {
     "enabled": true
@@ -11,22 +12,52 @@
     "rules": {
       "recommended": true,
       "suspicious": {
-        "noConsoleLog": "warn"
+        "noConsoleLog": "warn",
+        "noExplicitAny": "warn",
+        "noAsyncPromiseExecutor": "error",
+        "noGlobalIsFinite": "error",
+        "noGlobalIsNan": "error"
       },
       "style": {
-        "useTemplate": "off"
+        "useTemplate": "off",
+        "useConst": "error",
+        "useExponentiationOperator": "error",
+        "useNumericLiterals": "error"
       },
       "complexity": {
-        "useLiteralKeys": "off"
+        "useLiteralKeys": "off",
+        "noForEach": "warn",
+        "noStaticOnlyClass": "error",
+        "noUselessConstructor": "error"
       },
       "correctness": {
-        "noUnusedVariables": "warn"
+        "noUnusedVariables": "warn",
+        "noUndeclaredVariables": "error",
+        "noUnreachable": "error",
+        "useValidForDirection": "error"
+      },
+      "security": {
+        "noDangerouslySetInnerHtml": "error",
+        "noGlobalEval": "error"
+      },
+      "performance": {
+        "noDelete": "error"
       }
     }
   },
   "formatter": {
     "enabled": true,
     "lineWidth": 120,
-    "indentStyle": "space"
+    "indentStyle": "space",
+    "indentWidth": 2,
+    "attributePosition": "auto"
+  },
+  "javascript": {
+    "formatter": {
+      "quoteStyle": "double",
+      "semicolons": "always",
+      "trailingCommas": "es5"
+    },
+    "globals": ["Thenable"]
   }
 }

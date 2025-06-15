@@ -18,7 +18,7 @@ export class AnthropicProvider implements vscode.LanguageModelChatProvider {
           vscode.window
             .showInformationMessage(
               "API Key set successfully. Please restart the window to apply the changes.",
-              "Reload Window",
+              "Reload Window"
             )
             .then((selection) => {
               if (selection === "Reload Window") {
@@ -36,7 +36,7 @@ export class AnthropicProvider implements vscode.LanguageModelChatProvider {
     options: vscode.LanguageModelChatRequestOptions,
     _extensionId: string,
     progress: vscode.Progress<vscode.ChatResponseFragment2>,
-    token: vscode.CancellationToken,
+    token: vscode.CancellationToken
     // biome-ignore lint/suspicious/noExplicitAny: <explanation>
   ): Promise<any> {
     if (!this.apiKey) {
@@ -45,7 +45,7 @@ export class AnthropicProvider implements vscode.LanguageModelChatProvider {
     }
 
     const config = vscode.workspace.getConfiguration("copilot-boost-mode.anthropic");
-    const modelName = config.get<string>("modelName") || "claude-3-7-sonnet-latest";
+    const modelName = config.get<string>("modelName") || "claude-sonnet-4-20250514";
 
     // Create an abort controller and listen for cancellation requests
     const abortController = new AbortController();
@@ -68,8 +68,9 @@ export class AnthropicProvider implements vscode.LanguageModelChatProvider {
       apiKey: this.apiKey,
       headers: {
         "User-Agent": "claude-cli/1.0.24 (external, sdk-cli)",
-        "anthropic-beta": "claude-code-20250219,oauth-2025-04-20,interleaved-thinking-2025-05-14,fine-grained-tool-streaming-2025-05-14"
-      }
+        "anthropic-beta":
+          "claude-code-20250219,oauth-2025-04-20,interleaved-thinking-2025-05-14,fine-grained-tool-streaming-2025-05-14",
+      },
     });
 
     // Log configuration for debugging
@@ -132,7 +133,7 @@ export class AnthropicProvider implements vscode.LanguageModelChatProvider {
 
   provideTokenCount(
     _text: string | vscode.LanguageModelChatMessage,
-    _token: vscode.CancellationToken,
+    _token: vscode.CancellationToken
   ): Thenable<number> {
     try {
       // TODO

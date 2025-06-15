@@ -29,15 +29,15 @@ describe("Configuration", () => {
   test("should have all required commands", () => {
     const commands = packageJson.contributes.commands;
     expect(commands).toBeDefined();
-    
+
     const commandIds = commands.map((cmd: any) => cmd.command);
-    
+
     // API key commands
     expect(commandIds).toContain("copilot-boost-mode.anthropic.setKey");
     expect(commandIds).toContain("copilot-boost-mode.openai.setKey");
     expect(commandIds).toContain("copilot-boost-mode.groq.setKey");
     expect(commandIds).toContain("copilot-boost-mode.gemini.setKey");
-    
+
     // Test commands
     expect(commandIds).toContain("copilot-boost-mode.test.languageModel");
     expect(commandIds).toContain("copilot-boost-mode.test.comprehensive");
@@ -46,7 +46,7 @@ describe("Configuration", () => {
   test("should have provider configurations", () => {
     const config = packageJson.contributes.configuration;
     expect(config).toBeDefined();
-    
+
     // Check each provider config
     expect(config["copilot-boost-mode.anthropic"]).toBeDefined();
     expect(config["copilot-boost-mode.openai"]).toBeDefined();
@@ -58,7 +58,7 @@ describe("Configuration", () => {
   test("should have required dependencies", () => {
     const deps = packageJson.dependencies;
     expect(deps).toBeDefined();
-    
+
     // AI SDK dependencies
     expect(deps["@ai-sdk/anthropic"]).toBeDefined();
     expect(deps["@ai-sdk/openai"]).toBeDefined();
@@ -70,7 +70,7 @@ describe("Configuration", () => {
   test("should have required dev dependencies", () => {
     const devDeps = packageJson.devDependencies;
     expect(devDeps).toBeDefined();
-    
+
     expect(devDeps["@types/vscode"]).toBeDefined();
     expect(devDeps["typescript"]).toBeDefined();
     expect(devDeps["@biomejs/biome"]).toBeDefined();
@@ -79,7 +79,7 @@ describe("Configuration", () => {
   test("should have test scripts", () => {
     const scripts = packageJson.scripts;
     expect(scripts).toBeDefined();
-    
+
     expect(scripts.test).toBe("bun test");
     expect(scripts["test:unit"]).toBe("bun test tests/unit");
     expect(scripts["test:integration"]).toBe("bun test tests/integration");

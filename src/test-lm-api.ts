@@ -57,7 +57,6 @@ async function testModel(model: vscode.LanguageModelChat) {
     }
 
     tokenSource.dispose();
-
   } catch (error) {
     logger.error(`Error testing model ${model.name}:`, error);
   }
@@ -108,7 +107,6 @@ async function testModelWithTools(model: vscode.LanguageModelChat) {
     logger.log(`Tool calls made: ${toolCalls.length}`);
 
     tokenSource.dispose();
-
   } catch (error) {
     logger.error(`Error testing ${model.name} with tools:`, error);
   }
@@ -138,7 +136,6 @@ export async function testModelSelection() {
       logger.log(`  Version: ${model.version}`);
       logger.log(`  Max Input Tokens: ${model.maxInputTokens}`);
     }
-
   } catch (error) {
     logger.error("Error in model selection test:", error);
   }

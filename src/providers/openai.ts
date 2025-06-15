@@ -18,7 +18,7 @@ export class OpenAIProvider implements vscode.LanguageModelChatProvider {
           vscode.window
             .showInformationMessage(
               "API Key set successfully. Please restart the window to apply the changes.",
-              "Reload Window",
+              "Reload Window"
             )
             .then((selection) => {
               if (selection === "Reload Window") {
@@ -36,7 +36,7 @@ export class OpenAIProvider implements vscode.LanguageModelChatProvider {
     options: vscode.LanguageModelChatRequestOptions,
     _extensionId: string,
     progress: vscode.Progress<vscode.ChatResponseFragment2>,
-    token: vscode.CancellationToken,
+    token: vscode.CancellationToken
     // biome-ignore lint/suspicious/noExplicitAny: <explanation>
   ): Promise<any> {
     if (!this.apiKey) {
@@ -131,7 +131,7 @@ export class OpenAIProvider implements vscode.LanguageModelChatProvider {
 
   provideTokenCount(
     _text: string | vscode.LanguageModelChatMessage,
-    _token: vscode.CancellationToken,
+    _token: vscode.CancellationToken
   ): Thenable<number> {
     try {
       // TODO

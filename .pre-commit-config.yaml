@@ -1,0 +1,37 @@
+# Pre-commit hooks configuration
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.4.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-yaml
+      - id: check-json
+      - id: check-toml
+      - id: check-merge-conflict
+      - id: check-added-large-files
+        args: ['--maxkb=1000']
+      - id: no-commit-to-branch
+        args: ['--branch', 'production']
+
+  - repo: local
+    hooks:
+      - id: quality-check
+        name: Quality Check
+        entry: bun run quality-check
+        language: system
+        files: \.(ts|js|json)$
+        pass_filenames: false
+
+      - id: security-check
+        name: Security Check
+        entry: bun audit --audit-level=moderate
+        language: system
+        pass_filenames: false
+
+      - id: type-check
+        name: TypeScript Type Check
+        entry: bun run typecheck
+        language: system
+        files: \.ts$
+        pass_filenames: false

@@ -23,22 +23,22 @@ export async function activate(context: vscode.ExtensionContext) {
 
   // API Key
   context.subscriptions.push(
-    vscode.commands.registerCommand("copilot-boost-mode.anthropic.setKey", () => setApiKey(context, apiKeyAnthropic)),
+    vscode.commands.registerCommand("copilot-boost-mode.anthropic.setKey", () => setApiKey(context, apiKeyAnthropic))
   );
   context.subscriptions.push(
-    vscode.commands.registerCommand("copilot-boost-mode.groq.setKey", () => setApiKey(context, apiKeyGroq)),
+    vscode.commands.registerCommand("copilot-boost-mode.groq.setKey", () => setApiKey(context, apiKeyGroq))
   );
   context.subscriptions.push(
-    vscode.commands.registerCommand("copilot-boost-mode.gemini.setKey", () => setApiKey(context, apiKeyGemini)),
+    vscode.commands.registerCommand("copilot-boost-mode.gemini.setKey", () => setApiKey(context, apiKeyGemini))
   );
   context.subscriptions.push(
-    vscode.commands.registerCommand("copilot-boost-mode.openrouter.setKey", () => setApiKey(context, apiKeyOpenRouter)),
+    vscode.commands.registerCommand("copilot-boost-mode.openrouter.setKey", () => setApiKey(context, apiKeyOpenRouter))
   );
   context.subscriptions.push(
-    vscode.commands.registerCommand("copilot-boost-mode.openai.setKey", () => setApiKey(context, apiKeyOpenAI)),
+    vscode.commands.registerCommand("copilot-boost-mode.openai.setKey", () => setApiKey(context, apiKeyOpenAI))
   );
   context.subscriptions.push(
-    vscode.commands.registerCommand("copilot-boost-mode.anthropic.setClaudeCodeKey", () => setClaudeCodeKey(context)),
+    vscode.commands.registerCommand("copilot-boost-mode.anthropic.setClaudeCodeKey", () => setClaudeCodeKey(context))
   );
 
   // Create boostProvider with API Key

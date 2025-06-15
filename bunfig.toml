@@ -5,3 +5,5 @@ coverage = true
 include = ["**/*.test.ts", "**/tests/**/*.ts"]
 exclude = ["node_modules/**", "out/**", "**/*.d.ts"]
 env = { NODE_ENV = "test", LOG_LEVEL = "error" }
+reporter = "verbose"
+preload = ["./tests/setup.ts"]

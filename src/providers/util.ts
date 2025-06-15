@@ -4,7 +4,7 @@ import * as vscode from "vscode";
 import { logger } from "../logger";
 
 function isLanguageModelToolResultPart(
-  part: vscode.LanguageModelTextPart | vscode.LanguageModelToolResultPart | vscode.LanguageModelToolCallPart,
+  part: vscode.LanguageModelTextPart | vscode.LanguageModelToolResultPart | vscode.LanguageModelToolCallPart
 ): part is vscode.LanguageModelToolResultPart {
   let _toolResultPart: vscode.LanguageModelToolResultPart;
   if ("callId" in part && "content" in part) {
@@ -96,7 +96,7 @@ export const convertChatToCoreMessage = (message: vscode.LanguageModelChatMessag
 export const processTools = (
   options: vscode.LanguageModelChatRequestOptions,
   providerName: string,
-  toolNameTransform?: (name: string) => string,
+  toolNameTransform?: (name: string) => string
 ): { tools: Record<string, Tool>; hasTools: boolean } => {
   const tools: Record<string, Tool> = {};
 
@@ -149,7 +149,7 @@ export const logToolConfiguration = (
   tools: Record<string, Tool>,
   modelName: string,
   toolChoice: "auto" | "required" | undefined,
-  additionalConfig?: Record<string, unknown>,
+  additionalConfig?: Record<string, unknown>
 ): void => {
   logger.log(
     `[${providerName}] streamText config: modelName=${modelName}, toolChoice=${toolChoice}${
@@ -158,7 +158,7 @@ export const logToolConfiguration = (
             .map(([k, v]) => `${k}=${v}`)
             .join(", ")}`
         : ""
-    }`,
+    }`
   );
 
   logger.log(`[${providerName}] Tools available: ${hasTools}, tool count: ${Object.keys(tools).length}`);
