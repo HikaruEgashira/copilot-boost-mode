@@ -1,0 +1,12 @@
+[test]
+# Test configuration for bun test
+timeout = 30000
+bail = false
+coverage = true
+
+# Test patterns
+include = ["**/*.test.ts", "**/tests/**/*.ts"]
+exclude = ["node_modules/**", "out/**", "**/*.d.ts"]
+
+# Environment setup
+env = { NODE_ENV = "test", LOG_LEVEL = "error" }

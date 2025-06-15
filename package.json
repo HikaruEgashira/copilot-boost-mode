@@ -48,6 +48,22 @@
       {
         "command": "copilot-boost-mode.anthropic.setClaudeCodeKey",
         "title": "Set Claude Code API Key from Keychain"
+      },
+      {
+        "command": "copilot-boost-mode.test.languageModel",
+        "title": "Test Language Models"
+      },
+      {
+        "command": "copilot-boost-mode.test.modelSelection",
+        "title": "Test Model Selection"
+      },
+      {
+        "command": "copilot-boost-mode.test.all",
+        "title": "Run All Tests"
+      },
+      {
+        "command": "copilot-boost-mode.test.comprehensive",
+        "title": "Run Comprehensive LM API Tests"
       }
     ],
     "configuration": {
@@ -115,7 +131,12 @@
     "watch": "vite build --watch",
     "pretest": "npm run compile && npm run lint",
     "lint": "npx @biomejs/biome check --write ./src",
-    "test": "vscode-test",
+    "test": "bun test",
+    "test:unit": "bun test tests/unit",
+    "test:integration": "bun test tests/integration",
+    "test:watch": "bun test --watch",
+    "test:coverage": "bun test --coverage",
+    "test:vscode": "vscode-test",
     "update-proposed-api": "npx vscode-dts dev",
     "package": "bunx vsce package",
     "local": "VERSION=$(node -p \"require('./package.json').version\") && code-insiders --install-extension ./copilot-boost-mode-$VERSION.vsix --force"

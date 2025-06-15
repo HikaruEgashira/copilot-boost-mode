@@ -1,0 +1,64 @@
+name: Test
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    
+    strategy:
+      matrix:
+        node-version: [18, 20]
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Bun
+      uses: oven-sh/setup-bun@v1
+      with:
+        bun-version: latest
+        
+    - name: Setup Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ matrix.node-version }}
+        
+    - name: Install dependencies
+      run: bun install
+      
+    - name: Run linter
+      run: bun run lint
+      
+    - name: Run unit tests
+      run: bun run test:unit
+      
+    - name: Run integration tests  
+      run: bun run test:integration
+      
+    - name: Run tests with coverage
+      run: bun run test:coverage
+      
+    - name: Upload coverage reports
+      uses: codecov/codecov-action@v4
+      if: matrix.node-version == 20
+      with:
+        file: ./coverage/lcov.info
+        fail_ci_if_error: false
+        
+    - name: Build extension
+      run: bun run compile
+      
+    - name: Package extension
+      run: bun run package
+      
+    - name: Upload VSIX artifact
+      uses: actions/upload-artifact@v4
+      if: matrix.node-version == 20
+      with:
+        name: copilot-boost-mode-vsix
+        path: "*.vsix"

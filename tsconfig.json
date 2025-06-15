@@ -9,6 +9,7 @@
     ],
     "module": "CommonJS",
     "outDir": "out",
+    "resolveJsonModule": true,
     "skipLibCheck": true,
     "sourceMap": true,
     "strict": true,
@@ -17,7 +18,8 @@
   },
   "exclude": [
     "node_modules",
-    ".vscode-test"
+    ".vscode-test",
+    "tests"
   ],
   "include": [
     "src",
