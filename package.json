@@ -52,7 +52,7 @@
         "properties": {
           "modelName": {
             "type": "string",
-            "default": "claude-3-7-sonnet-latest",
+            "default": "claude-sonnet-4-20250514",
             "description": "The model name to use for Anthropic API."
           }
         }
@@ -72,7 +72,7 @@
         "properties": {
           "modelName": {
             "type": "string",
-            "default": "gemini-2.5-pro-exp-03-25",
+            "default": "gemini-2.5-flash-preview-05-20",
             "description": "The model name to use for Gemini API."
           }
         }
@@ -82,7 +82,7 @@
         "properties": {
           "modelName": {
             "type": "string",
-            "default": "openrouter/optimus-alpha",
+            "default": "deepseek/deepseek-r1-0528:free",
             "description": "The model name to use for OpenRouter API."
           }
         }
