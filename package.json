@@ -138,7 +138,7 @@
     "test:integration": "bun test tests/integration",
     "test:watch": "bun test --watch",
     "test:coverage": "bun test --coverage",
-    "test:vscode": "node out/runTest.js",
+    "test:vscode": "node out/tests/e2e/runTest.js",
     "test:all": "bun run test:unit && bun run test:integration",
     "quality-check": "bun run lint:check && bun run typecheck && bun run test:all",
     "pre-commit": "bun run quality-check",

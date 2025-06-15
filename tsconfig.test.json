@@ -2,10 +2,11 @@
   "extends": "./tsconfig.json",
   "compilerOptions": {
     "skipLibCheck": true,
-    "outDir": "out"
+    "outDir": "out/tests/e2e",
+    "rootDir": "tests/e2e"
   },
   "include": [
-    "src/test/**/*"
+    "tests/e2e/**/*"
   ],
   "exclude": [
     "node_modules"

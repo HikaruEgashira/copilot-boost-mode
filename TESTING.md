@@ -11,19 +11,18 @@ The project uses two test frameworks:
 ### Test Structure
 
 ```
-tests/                    # Bun tests
+tests/                    # All tests
 ├── unit/                 # Unit tests for individual components
 ├── integration/          # Integration tests for full workflows
+├── e2e/                  # VS Code extension E2E tests
+│   ├── runTest.ts        # Test runner entry point
+│   └── suite/
+│       ├── index.ts      # Mocha test suite configuration
+│       └── extension.test.ts # Extension integration tests
 ├── mocks/                # Mock implementations for testing
 ├── performance/          # Performance benchmarks
 ├── utils/                # Test utilities
 └── setup.ts              # Global test setup
-
-src/test/                 # VS Code extension tests
-├── runTest.ts            # Test runner entry point
-└── suite/
-    ├── index.ts          # Mocha test suite configuration
-    └── extension.test.ts # Extension integration tests
 ```
 
 ## Prerequisites
@@ -94,7 +93,7 @@ The VS Code integration tests use:
 - `@vscode/test-electron` for running tests in VS Code environment
 - `mocha` as the test framework for VS Code tests
 - Separate TypeScript configuration (`tsconfig.test.json`)
-- Test files located in `src/test/suite/` (separate from Bun tests in `tests/`)
+- Test files located in `tests/e2e/` alongside other test categories
 
 ## Test Configuration
 
