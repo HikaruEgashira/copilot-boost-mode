@@ -18,8 +18,7 @@
   },
   "exclude": [
     "node_modules",
-    ".vscode-test",
-    "tests"
+    ".vscode-test"
   ],
   "include": [
     "src",

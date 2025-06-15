@@ -58,6 +58,6 @@
       "semicolons": "always",
       "trailingCommas": "es5"
     },
-    "globals": ["Thenable"]
+    "globals": ["Thenable", "suite", "test"]
   }
 }

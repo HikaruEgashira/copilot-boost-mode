@@ -4,13 +4,26 @@ This document describes how to run tests for the Copilot Boost Mode extension.
 
 ## Test Setup
 
-The project uses [Bun](https://bun.sh/) as the test runner with the following test structure:
+The project uses two test frameworks:
+- **[Bun](https://bun.sh/)** for unit and integration tests
+- **[@vscode/test-electron](https://github.com/microsoft/vscode-test)** for VS Code extension tests
+
+### Test Structure
 
 ```
-tests/
-├── unit/           # Unit tests for individual components
-├── integration/    # Integration tests for full workflows  
-└── mocks/          # Mock implementations for testing
+tests/                    # Bun tests
+├── unit/                 # Unit tests for individual components
+├── integration/          # Integration tests for full workflows
+├── mocks/                # Mock implementations for testing
+├── performance/          # Performance benchmarks
+├── utils/                # Test utilities
+└── setup.ts              # Global test setup
+
+src/test/                 # VS Code extension tests
+├── runTest.ts            # Test runner entry point
+└── suite/
+    ├── index.ts          # Mocha test suite configuration
+    └── extension.test.ts # Extension integration tests
 ```
 
 ## Prerequisites
@@ -71,9 +84,17 @@ bun run test:vscode
 - **End-to-End Workflows**: Test complete user workflows
 
 ### VS Code Extension Tests
-- **API Integration**: Test VS Code API integration
+- **API Integration**: Test VS Code API integration using `@vscode/test-electron`
 - **Extension Host**: Test extension in actual VS Code environment
-- **UI Components**: Test user interface components
+- **Extension Presence**: Verify extension is loaded and accessible
+- **Basic Functionality**: Test core VS Code integration points
+
+#### VS Code Test Setup
+The VS Code integration tests use:
+- `@vscode/test-electron` for running tests in VS Code environment
+- `mocha` as the test framework for VS Code tests
+- Separate TypeScript configuration (`tsconfig.test.json`)
+- Test files located in `src/test/suite/` (separate from Bun tests in `tests/`)
 
 ## Test Configuration
 
@@ -124,7 +145,7 @@ Two workflows are configured:
    - Generates coverage reports
    - Uploads VSIX artifacts
 
-2. **vscode-test.yml**: Runs VS Code extension tests  
+2. **vscode-test.yml**: Runs VS Code extension tests
    - Tests on Ubuntu, Windows, and macOS
    - Tests with VS Code stable and insiders
    - Includes display server setup for Linux
@@ -185,7 +206,7 @@ describe("Extension Integration", () => {
   beforeEach(() => {
     // Setup mock context
   });
-  
+
   test("should activate successfully", async () => {
     // Test activation flow
   });
@@ -195,7 +216,7 @@ describe("Extension Integration", () => {
 ## Best Practices
 
 1. **Isolate Tests**: Each test should be independent
-2. **Mock External Dependencies**: Use mocks for VS Code API and external services  
+2. **Mock External Dependencies**: Use mocks for VS Code API and external services
 3. **Clear Test Names**: Use descriptive test names
 4. **Setup/Teardown**: Use `beforeEach`/`afterEach` for clean state
 5. **Async Handling**: Properly handle async operations
