@@ -33,7 +33,7 @@ export class MockAISDK {
   }
 
   static createMockStreamText() {
-    return mock((config: any) => {
+    return mock((_config: any) => {
       if (this.shouldError) {
         throw new Error("Mock API Error");
       }

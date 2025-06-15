@@ -1,4 +1,4 @@
-import { describe, test, expect, beforeEach, mock } from "bun:test";
+import { describe, test, expect } from "bun:test";
 
 // Import after mocking is set up in setup.ts
 import { logger, channel } from "../../src/logger";

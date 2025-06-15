@@ -7,6 +7,7 @@ import { describe, test, expect, beforeAll, mock } from "bun:test";
 
 // Import global setup
 import "../setup";
+import { mockVscode } from "../mocks/vscode-mock";
 
 // Performance measurement utilities
 class PerformanceMetrics {
@@ -52,7 +53,7 @@ mock.module("@ai-sdk/anthropic", () => ({
 }));
 
 mock.module("ai", () => ({
-  streamText: mock(async (config: any) => {
+  streamText: mock(async (_config: any) => {
     // Simulate realistic API response times
     await new Promise(resolve => setTimeout(resolve, Math.random() * 50 + 10));
 
@@ -127,7 +128,7 @@ describe("Performance Benchmarks", () => {
         };
 
         await provider.provideLanguageModelResponse(
-          [{ role: 1, content: "Hello" }],
+          [new mockVscode.LanguageModelChatMessage(1, [{ type: "text", text: "Hello" }], "")] as any,
           {},
           "test-extension",
           mockProgress,
@@ -169,7 +170,7 @@ describe("Performance Benchmarks", () => {
         }];
 
         await provider.provideLanguageModelResponse(
-          [{ role: 1, content: "What's the weather?" }],
+          [new mockVscode.LanguageModelChatMessage(1, [{ type: "text", text: "What's the weather?" }], "")] as any,
           { tools },
           "test-extension",
           mockProgress,
@@ -198,7 +199,7 @@ describe("Performance Benchmarks", () => {
         };
 
         return provider.provideLanguageModelResponse(
-          [{ role: 1, content: "Concurrent test" }],
+          [new mockVscode.LanguageModelChatMessage(1, [{ type: "text", text: "Concurrent test" }], "")] as any,
           {},
           "test-extension",
           mockProgress,
@@ -231,7 +232,7 @@ describe("Performance Benchmarks", () => {
         };
 
         await provider.provideLanguageModelResponse(
-          [{ role: 1, content: `Test message ${i}` }],
+          [new mockVscode.LanguageModelChatMessage(1, [{ type: "text", text: `Test message ${i}` }], "")] as any,
           {},
           "test-extension",
           mockProgress,
@@ -272,7 +273,7 @@ describe("Performance Benchmarks", () => {
         };
 
         await provider.provideLanguageModelResponse(
-          [{ role: 1, content: "Throughput test" }],
+          [new mockVscode.LanguageModelChatMessage(1, [{ type: "text", text: "Throughput test" }], "")] as any,
           {},
           "test-extension",
           mockProgress,
@@ -299,10 +300,13 @@ describe("Performance Benchmarks", () => {
   describe("Resource Efficiency", () => {
     test("should efficiently handle large message histories", async () => {
       // Create a large message history
-      const largeHistory = Array.from({ length: 100 }, (_, i) => ({
-        role: i % 2 === 0 ? 1 : 2, // Alternate between user and assistant
-        content: `Message ${i}: This is a longer message to test how the provider handles large conversation histories with substantial content.`
-      }));
+      const largeHistory = Array.from({ length: 100 }, (_, i) =>
+        new mockVscode.LanguageModelChatMessage(
+          i % 2 === 0 ? 1 : 2, // Alternate between user and assistant
+          [{ type: "text", text: `Message ${i}: This is a longer message to test how the provider handles large conversation histories with substantial content.` }],
+          ""
+        )
+      );
 
       const stopTimer = metrics.startTimer("large-history");
 
@@ -313,7 +317,7 @@ describe("Performance Benchmarks", () => {
       };
 
       await provider.provideLanguageModelResponse(
-        largeHistory,
+        largeHistory as any,
         {},
         "test-extension",
         mockProgress,
@@ -353,7 +357,7 @@ describe("Performance Benchmarks", () => {
       };
 
       await provider.provideLanguageModelResponse(
-        [{ role: 1, content: "Use complex tools" }],
+        [new mockVscode.LanguageModelChatMessage(1, [{ type: "text", text: "Use complex tools" }], "")] as any,
         { tools: complexTools },
         "test-extension",
         mockProgress,

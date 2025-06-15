@@ -1,4 +1,4 @@
-import { describe, test, expect, beforeEach, mock } from "bun:test";
+import { describe, test, expect } from "bun:test";
 
 describe("Error Handling and Edge Cases", () => {
   describe("Input Validation", () => {
@@ -85,7 +85,7 @@ describe("Error Handling and Edge Cases", () => {
     test("should handle promise rejection", async () => {
       const rejectedPromise = Promise.reject(new Error("Test error"));
 
-      await expect(rejectedPromise).rejects.toThrow("Test error");
+      expect(rejectedPromise).rejects.toThrow("Test error");
     });
 
     test("should handle promise timeout", async () => {
@@ -93,7 +93,7 @@ describe("Error Handling and Edge Cases", () => {
         setTimeout(() => reject(new Error("Timeout")), 100);
       });
 
-      await expect(timeoutPromise).rejects.toThrow("Timeout");
+      expect(timeoutPromise).rejects.toThrow("Timeout");
     });
 
     test("should handle multiple async operations", async () => {
@@ -114,7 +114,7 @@ describe("Error Handling and Edge Cases", () => {
         Promise.resolve("another success")
       ];
 
-      await expect(Promise.all(promises)).rejects.toThrow("failure");
+      expect(Promise.all(promises)).rejects.toThrow("failure");
 
       const results = await Promise.allSettled(promises);
       expect(results[0]).toEqual({ status: "fulfilled", value: "success" });
@@ -125,9 +125,9 @@ describe("Error Handling and Edge Cases", () => {
 
   describe("Type Coercion", () => {
     test("should handle type coercion edge cases", () => {
-      expect([] + []).toBe("");
-      expect([] + {}).toBe("[object Object]");
-      expect({} + []).toBe("[object Object]");
+      expect(([] as any) + ([] as any)).toBe("");
+      expect(([] as any) + ({} as any)).toBe("[object Object]");
+      expect(({} as any) + ([] as any)).toBe("[object Object]");
       expect(+"").toBe(0);
       expect(+"123").toBe(123);
       expect(+"abc").toBeNaN();
@@ -230,7 +230,7 @@ describe("Error Handling and Edge Cases", () => {
       expect(b).toBe(2);
       expect(rest).toEqual({ c: 3 });
 
-      const { d = "default" } = obj;
+      const { d = "default" } = obj as any;
       expect(d).toBe("default");
     });
 

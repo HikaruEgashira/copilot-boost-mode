@@ -5,8 +5,6 @@ import { GeminiProvider } from "./providers/gemini";
 import { GroqProvider } from "./providers/groq";
 import { OpenAIProvider } from "./providers/openai";
 import { OpenRouterProvider } from "./providers/openrouter";
-import { registerTestCommands } from "./test-lm-api";
-import { registerTestRunner } from "./test-runner";
 
 const apiKeyAnthropic = "AnthropicCopilotBoostApiKey";
 const apiKeyGroq = "GroqCopilotBoostApiKey";
@@ -134,8 +132,7 @@ export async function activate(context: vscode.ExtensionContext) {
   });
   context.subscriptions.push(openaiDisposable);
 
-  registerTestCommands(context);
-  registerTestRunner(context);
+  // Test commands have been moved to test files
 }
 
 async function setApiKey(context: vscode.ExtensionContext, key: string) {

@@ -17,12 +17,12 @@ const mockVSCode = {
       mockProviders.set(id, provider);
       return { dispose: mock() };
     }),
-    registerChatModelProvider: mock((id: string, provider: any, metadata?: any) => {
+    registerChatModelProvider: mock((id: string, provider: any, _metadata?: any) => {
       mockProviders.set(id, provider);
       return { dispose: mock() };
     }),
     selectChatModels: mock(async (criteria?: any) => {
-      const models = [];
+      const models: any[] = [];
       for (const [id, provider] of mockProviders) {
         if (!criteria || !criteria.vendor || criteria.vendor === "boost") {
           models.push({

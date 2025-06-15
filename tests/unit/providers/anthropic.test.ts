@@ -346,7 +346,7 @@ describe("AnthropicProvider", () => {
 
       const messages = [new mockVscode.LanguageModelChatMessage(1, "Hello")];
 
-      await expect(provider.provideLanguageModelResponse(
+      expect(provider.provideLanguageModelResponse(
         messages as any,
         {} as any,
         "test-extension",

@@ -77,25 +77,25 @@ export class MockVSCode {
           clear: mock(),
           replace: mock()
         })),
-        showErrorMessage: mock(async (message: string, ...items: string[]) => {
+        showErrorMessage: mock(async (_message: string, ...items: string[]) => {
           // Simulate user clicking the first item
           return items[0];
         }),
-        showInformationMessage: mock(async (message: string, ...items: string[]) => {
+        showInformationMessage: mock(async (_message: string, ...items: string[]) => {
           return items[0];
         }),
         showWarningMessage: mock(),
-        showInputBox: mock(async (options?: any) => {
+        showInputBox: mock(async (_options?: any) => {
           return "mock-input-value";
         })
       },
 
       // Commands API
       commands: {
-        registerCommand: mock((command: string, callback: any) => ({
+        registerCommand: mock((_command: string, _callback: any) => ({
           dispose: mock()
         })),
-        executeCommand: mock(async (command: string, ...args: any[]) => {
+        executeCommand: mock(async (command: string, ..._args: any[]) => {
           // Mock common commands
           if (command === "workbench.action.reloadWindow") {
             return;
@@ -106,7 +106,9 @@ export class MockVSCode {
 
       // Language Model Classes
       LanguageModelChatMessage: class {
-        constructor(public role: number, public content: string | any[]) {}
+        constructor(public role: number, public content: string | any[], public name?: string) {
+          this.name = name || "";
+        }
       },
 
       LanguageModelTextPart: class {

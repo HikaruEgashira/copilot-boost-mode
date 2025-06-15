@@ -1,4 +1,4 @@
-import { beforeEach, mock } from "bun:test";
+import { mock } from "bun:test";
 import { createProviderTests, PROVIDER_CONFIGS } from "../../utils/provider-test-base";
 
 // Import the global mock setup
