@@ -100,7 +100,7 @@ export class AnthropicProvider implements vscode.LanguageModelChatProvider {
       toolChoice: hasTools ? toolChoice : undefined,
       tools: hasTools ? tools : undefined,
       abortSignal: abortController.signal,
-      experimental_toolCallStreaming: false, // Use experimental flag
+      toolCallStreaming: false, // Use experimental flag
     };
 
     logger.log(`Stream config: ${JSON.stringify({ ...streamConfig, messages: "omitted", model: "omitted" })}`);
