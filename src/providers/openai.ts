@@ -72,7 +72,6 @@ export class OpenAIProvider implements vscode.LanguageModelChatProvider {
 
     // Log configuration for debugging
     logToolConfiguration("OpenAI", hasTools, tools, modelName, toolChoice, {
-      toolCallStreaming: false,
       baseURL: baseURL || "default",
     });
 
@@ -82,7 +81,6 @@ export class OpenAIProvider implements vscode.LanguageModelChatProvider {
       toolChoice: hasTools ? toolChoice : undefined,
       tools: hasTools ? tools : undefined,
       abortSignal: abortController.signal,
-      experimental_toolCallStreaming: false, // Use experimental flag
     };
 
     logger.log(`Stream config: ${JSON.stringify({ ...streamConfig, messages: "omitted", model: "omitted" })}`);
@@ -99,7 +97,6 @@ export class OpenAIProvider implements vscode.LanguageModelChatProvider {
           });
           logger.info(`boostProvider: ${part.textDelta}`);
         } else if (part.type === "tool-call") {
-          // Skip incomplete tool calls that might come through despite toolCallStreaming: false
           if (part.toolCallId && part.toolName) {
             progress.report({
               index: 0,
@@ -109,10 +106,8 @@ export class OpenAIProvider implements vscode.LanguageModelChatProvider {
             logger.log(`Skipping incomplete tool call: ${JSON.stringify(part)}`);
           }
         } else if (part.type === "tool-call-streaming-start") {
-          // Ignore streaming tool call events when toolCallStreaming is false
           logger.log(`Ignoring tool-call-streaming-start: ${JSON.stringify(part)}`);
         } else if (part.type === "tool-call-delta") {
-          // Ignore streaming tool call deltas when toolCallStreaming is false
           logger.log("Ignoring tool-call-delta");
         } else if (part.type === "step-finish") {
         } else if (part.type === "finish") {

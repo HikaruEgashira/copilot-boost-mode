@@ -26,14 +26,14 @@ export const convertChatToCoreMessage = (message: vscode.LanguageModelChatMessag
         toolResultParts.push({
           type: "tool-result",
           toolCallId: item.callId,
-          result: item.content
+          output: { type: "text" as const, value: item.content
             .map((item) => {
               if (item instanceof vscode.LanguageModelTextPart) {
                 return item.value;
               }
               return JSON.stringify(item);
             })
-            .join(" ,"),
+            .join(" ,") },
           toolName: "test",
         });
       }
@@ -115,7 +115,7 @@ export const processTools = (
     try {
       tools[toolName] = {
         // biome-ignore lint/suspicious/noExplicitAny: AI SDK requires any type for flexibility
-        parameters: jsonSchema(schema as any),
+        inputSchema: jsonSchema(schema as any),
         description: tool.description,
       };
 
