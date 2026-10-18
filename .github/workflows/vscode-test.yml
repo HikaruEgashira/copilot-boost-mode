@@ -13,7 +13,7 @@ jobs:
     
     strategy:
       matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]
+        os: [hikae-flash, windows-latest, macos-latest]
         vscode-version: [stable, insiders]
         
     steps:

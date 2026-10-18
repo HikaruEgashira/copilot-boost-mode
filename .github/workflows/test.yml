@@ -9,8 +9,7 @@ on:
 
 jobs:
   test:
-    runs-on: ubuntu-latest
-    
+    runs-on: [self-hosted, linux, arm64, hikae-flash]
     strategy:
       matrix:
         node-version: [18, 20]
