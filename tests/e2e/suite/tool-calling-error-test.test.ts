@@ -5,6 +5,11 @@ suite("Tool Calling Error Reproduction Test Suite", () => {
   test("Reproduce actual tool calling error with bypassed API key", async function() {
     this.timeout(90000); // 1.5 minutes for debugging
 
+    if (!process.env.ANTHROPIC_API_KEY) {
+      console.log("ANTHROPIC_API_KEY not set, skipping test");
+      this.skip();
+    }
+
     console.log("=== Tool Calling Error Reproduction with API Key Bypass ===");
     console.log("Environment VSCODE_EXTENSION_UNDER_TEST:", process.env.VSCODE_EXTENSION_UNDER_TEST);
     console.log("Environment ANTHROPIC_API_KEY available:", !!process.env.ANTHROPIC_API_KEY);
