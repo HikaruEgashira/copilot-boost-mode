@@ -67,7 +67,7 @@ export const convertChatToModelMessage = (message: vscode.LanguageModelChatMessa
         }
         return {
           type: "tool-call",
-          args: toolArgs,
+          input: toolArgs,
           toolName: item.name,
           toolCallId: item.callId,
         };

@@ -96,15 +96,14 @@ export class OpenRouterProvider implements vscode.LanguageModelChatProvider {
         if (part.type === "text-delta") {
           progress.report({
             index: 0,
-            part: new vscode.LanguageModelTextPart(part.textDelta),
+            part: new vscode.LanguageModelTextPart(part.text),
           });
-          logger.info(`boostProvider: ${part.textDelta}`);
+          logger.info(`boostProvider: ${part.text}`);
         } else if (part.type === "tool-call") {
           progress.report({
             index: 0,
-            part: new vscode.LanguageModelToolCallPart(part.toolCallId, part.toolName, part.args),
+            part: new vscode.LanguageModelToolCallPart(part.toolCallId, part.toolName, part.input),
           });
-        } else if (part.type === "step-finish") {
         } else if (part.type === "finish") {
         } else if (part.type === "error") {
           throw part.error;
