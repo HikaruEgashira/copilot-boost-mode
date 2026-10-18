@@ -2,7 +2,7 @@ import { createAnthropic } from "@ai-sdk/anthropic";
 import { streamText } from "ai";
 import * as vscode from "vscode";
 import { logger } from "../logger";
-import { convertChatToCoreMessage, logToolConfiguration, processTools } from "./util";
+import { convertChatToModelMessage, logToolConfiguration, processTools } from "./util";
 
 export class AnthropicProvider implements vscode.LanguageModelChatProvider {
   private context: vscode.ExtensionContext;
@@ -78,7 +78,7 @@ export class AnthropicProvider implements vscode.LanguageModelChatProvider {
       toolChoice = "auto";
     }
 
-    const boostMessages = messages.map(convertChatToCoreMessage);
+    const boostMessages = messages.map(convertChatToModelMessage);
 
     const anthropic = createAnthropic({
       apiKey: apiKey,

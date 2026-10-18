@@ -39,7 +39,7 @@ mock.module("vscode", () => mockVscode);
 
 // Import after mocking
 import {
-  convertChatToCoreMessage,
+  convertChatToModelMessage,
   processTools,
   logToolConfiguration,
   createGeminiToolName
@@ -50,14 +50,14 @@ describe("Provider Utilities", () => {
     Object.values(mockLogger).forEach(m => m.mockClear());
   });
 
-  describe("convertChatToCoreMessage", () => {
+  describe("convertChatToModelMessage", () => {
     test("should convert user message with text content", () => {
       const message = {
         role: mockVscode.LanguageModelChatMessageRole.User,
         content: [new mockVscode.LanguageModelTextPart("Hello world")]
       };
 
-      const result = convertChatToCoreMessage(message as any);
+      const result = convertChatToModelMessage(message as any);
 
       expect(result).toEqual({
         role: "user",
@@ -71,7 +71,7 @@ describe("Provider Utilities", () => {
         content: [new mockVscode.LanguageModelTextPart("Hello back")]
       };
 
-      const result = convertChatToCoreMessage(message as any);
+      const result = convertChatToModelMessage(message as any);
 
       expect(result).toEqual({
         role: "assistant",
@@ -85,7 +85,7 @@ describe("Provider Utilities", () => {
         content: [new mockVscode.LanguageModelTextPart("System prompt")]
       };
 
-      const result = convertChatToCoreMessage(message as any);
+      const result = convertChatToModelMessage(message as any);
 
       expect(result).toEqual({
         role: "system",
@@ -102,7 +102,7 @@ describe("Provider Utilities", () => {
         ]
       };
 
-      const result = convertChatToCoreMessage(message as any);
+      const result = convertChatToModelMessage(message as any);
 
       expect(result).toEqual({
         role: "assistant",
@@ -126,7 +126,7 @@ describe("Provider Utilities", () => {
         ]
       };
 
-      const result = convertChatToCoreMessage(message as any);
+      const result = convertChatToModelMessage(message as any);
 
       expect(result.role).toBe("assistant");
       expect(result.content[0]).toEqual({
@@ -144,7 +144,7 @@ describe("Provider Utilities", () => {
         content: []
       };
 
-      const result = convertChatToCoreMessage(message as any);
+      const result = convertChatToModelMessage(message as any);
 
       expect(result).toEqual({
         role: "user",
