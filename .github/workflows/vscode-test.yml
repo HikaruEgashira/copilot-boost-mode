@@ -9,12 +9,22 @@ on:
 
 jobs:
   vscode-test:
-    runs-on: ${{ matrix.os }}
-    
+    runs-on: ${{ matrix.runner }}
+
     strategy:
+      fail-fast: false
       matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]
+        os: [hikae-flash, windows-latest, macos-latest]
         vscode-version: [stable, insiders]
+        include:
+          # Ubuntu/Linux jobs run on the hikae self-hosted ARM64 runners,
+          # Windows and macOS stay on GitHub-hosted runners.
+          - os: hikae-flash
+            runner: [self-hosted, linux, arm64, hikae-flash]
+          - os: windows-latest
+            runner: windows-latest
+          - os: macos-latest
+            runner: macos-latest
         
     steps:
     - name: Checkout code

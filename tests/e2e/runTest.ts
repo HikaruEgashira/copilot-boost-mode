@@ -17,6 +17,13 @@ async function main() {
       extensionTestsPath,
       // Use VS Code Insiders for proposed API support
       version: 'insiders',
+      // The extension relies on proposed APIs (chatProvider), so make sure the
+      // test instance enables them for the extension under development.
+      launchArgs: [
+        "--disable-gpu",
+        "--enable-proposed-api",
+        "HikaruEgashira.copilot-boost-mode",
+      ],
       // Install required extensions
       extensionTestsEnv: {
         VSCODE_EXTENSION_UNDER_TEST: 'true'
