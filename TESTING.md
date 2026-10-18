@@ -140,12 +140,14 @@ Coverage reports are generated in the `coverage/` directory:
 Two workflows are configured:
 
 1. **test.yml**: Runs unit and integration tests
+   - Runs on the `hikae-flash` self-hosted Linux ARM64 runner
    - Tests on Node.js 18 and 20
    - Generates coverage reports
    - Uploads VSIX artifacts
 
 2. **vscode-test.yml**: Runs VS Code extension tests
-   - Tests on Ubuntu, Windows, and macOS
+   - Runs the Linux jobs on the `hikae-flash` self-hosted Linux ARM64 runner
+   - Tests on Windows and macOS using GitHub-hosted runners
    - Tests with VS Code stable and insiders
    - Includes display server setup for Linux
 
