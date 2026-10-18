@@ -20,12 +20,12 @@ mock.module("ai", () => ({
 }));
 
 // Mock util functions
-const mockConvertChatToCoreMessage = mock(() => ({ role: "user", content: "test" }));
+const mockConvertChatToModelMessage = mock(() => ({ role: "user", content: "test" }));
 const mockProcessTools = mock(() => ({ tools: {}, hasTools: false }));
 const mockLogToolConfiguration = mock(() => {});
 
 mock.module("../../../src/providers/util", () => ({
-  convertChatToCoreMessage: mockConvertChatToCoreMessage,
+  convertChatToModelMessage: mockConvertChatToModelMessage,
   processTools: mockProcessTools,
   logToolConfiguration: mockLogToolConfiguration
 }));
@@ -98,7 +98,7 @@ describe("AnthropicProvider", () => {
     // Clear all mocks
     mockCreateAnthropic.mockClear();
     mockStreamText.mockClear();
-    mockConvertChatToCoreMessage.mockClear();
+    mockConvertChatToModelMessage.mockClear();
     mockProcessTools.mockClear();
     mockLogToolConfiguration.mockClear();
     Object.values(mockLogger).forEach(m => m.mockClear());
@@ -229,7 +229,7 @@ describe("AnthropicProvider", () => {
         mockCancellationToken as any
       );
 
-      expect(mockConvertChatToCoreMessage).toHaveBeenCalledTimes(2);
+      expect(mockConvertChatToModelMessage).toHaveBeenCalledTimes(2);
     });
 
     test("should process tools when provided", async () => {

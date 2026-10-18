@@ -1,4 +1,4 @@
-import type { AssistantContent, CoreMessage, TextPart, Tool, ToolResultPart } from "ai";
+import type { AssistantContent, ModelMessage, TextPart, Tool, ToolResultPart } from "ai";
 import { jsonSchema } from "ai";
 import * as vscode from "vscode";
 import { logger } from "../logger";
@@ -14,7 +14,7 @@ function isLanguageModelToolResultPart(
   return false;
 }
 
-export const convertChatToCoreMessage = (message: vscode.LanguageModelChatMessage): CoreMessage => {
+export const convertChatToModelMessage = (message: vscode.LanguageModelChatMessage): ModelMessage => {
   // Convert a `vscode.LanguageModelChatMessage` to a `UserMessage` or `ToolMessage`
   if (message.role === vscode.LanguageModelChatMessageRole.User) {
     const toolResultParts: ToolResultPart[] = [];

@@ -2,7 +2,7 @@ import { createGroq } from "@ai-sdk/groq";
 import { streamText } from "ai";
 import * as vscode from "vscode";
 import { logger } from "../logger";
-import { convertChatToCoreMessage, logToolConfiguration, processTools } from "./util";
+import { convertChatToModelMessage, logToolConfiguration, processTools } from "./util";
 
 export class GroqProvider implements vscode.LanguageModelChatProvider {
   apiKey: string | undefined;
@@ -62,7 +62,7 @@ export class GroqProvider implements vscode.LanguageModelChatProvider {
       toolChoice = "auto";
     }
 
-    const boostMessages = messages.map(convertChatToCoreMessage);
+    const boostMessages = messages.map(convertChatToModelMessage);
 
     const groq = createGroq({
       apiKey: this.apiKey,

@@ -2,7 +2,7 @@ import { createGoogleGenerativeAI } from "@ai-sdk/google";
 import { streamText } from "ai";
 import * as vscode from "vscode";
 import { logger } from "../logger";
-import { convertChatToCoreMessage, createGeminiToolName, logToolConfiguration, processTools } from "./util";
+import { convertChatToModelMessage, createGeminiToolName, logToolConfiguration, processTools } from "./util";
 
 export class GeminiProvider implements vscode.LanguageModelChatProvider {
   apiKey: string | undefined;
@@ -62,7 +62,7 @@ export class GeminiProvider implements vscode.LanguageModelChatProvider {
       toolChoice = "auto";
     }
 
-    const boostMessages = messages.map(convertChatToCoreMessage);
+    const boostMessages = messages.map(convertChatToModelMessage);
 
     const gemini = createGoogleGenerativeAI({
       apiKey: this.apiKey,

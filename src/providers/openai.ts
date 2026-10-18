@@ -2,7 +2,7 @@ import { createOpenAI } from "@ai-sdk/openai";
 import { streamText } from "ai";
 import * as vscode from "vscode";
 import { logger } from "../logger";
-import { convertChatToCoreMessage, logToolConfiguration, processTools } from "./util";
+import { convertChatToModelMessage, logToolConfiguration, processTools } from "./util";
 
 export class OpenAIProvider implements vscode.LanguageModelChatProvider {
   apiKey: string | undefined;
@@ -63,7 +63,7 @@ export class OpenAIProvider implements vscode.LanguageModelChatProvider {
       toolChoice = "auto";
     }
 
-    const boostMessages = messages.map(convertChatToCoreMessage);
+    const boostMessages = messages.map(convertChatToModelMessage);
 
     const openai = createOpenAI({
       apiKey: this.apiKey,

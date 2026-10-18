@@ -31,7 +31,7 @@ export function createProviderTests(config: ProviderTestConfig) {
       hasTools: Boolean(tools && tools.length > 0)
     }));
 
-    const mockConvertChatToCoreMessage = mock((message: any) => ({
+    const mockConvertChatToModelMessage = mock((message: any) => ({
       role: message.role === 1 ? "user" : "assistant",
       content: typeof message.content === "string" ? message.content : "test content"
     }));
@@ -43,7 +43,7 @@ export function createProviderTests(config: ProviderTestConfig) {
       MockAISDK.reset();
       MockVSCode.reset();
       mockProcessTools.mockClear();
-      mockConvertChatToCoreMessage.mockClear();
+      mockConvertChatToModelMessage.mockClear();
       mockLogToolConfiguration.mockClear();
 
       // Create fresh mocks
@@ -70,7 +70,7 @@ export function createProviderTests(config: ProviderTestConfig) {
 
       // Mock provider utilities
       mock.module("../../../src/providers/util", () => ({
-        convertChatToCoreMessage: mockConvertChatToCoreMessage,
+        convertChatToModelMessage: mockConvertChatToModelMessage,
         processTools: mockProcessTools,
         logToolConfiguration: mockLogToolConfiguration
       }));
