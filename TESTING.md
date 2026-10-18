@@ -94,6 +94,19 @@ The VS Code integration tests use:
 - `mocha` as the test framework for VS Code tests
 - Separate TypeScript configuration (`tsconfig.test.json`)
 - Test files located in `tests/e2e/` alongside other test categories
+- VS Code Insiders, because the extension relies on the proposed `chatProvider` API
+
+#### Live API Tests
+Tests under `tests/e2e/` that exercise a real provider (`sendRequest`) are skipped
+unless the matching API key is present in the environment. This keeps the suite
+deterministic on CI runners that do not have provider credentials. Set one or more
+of the following to run those tests locally:
+
+- `ANTHROPIC_API_KEY`
+- `GROQ_API_KEY`
+- `GEMINI_API_KEY`
+- `OPENROUTER_API_KEY`
+- `OPENAI_API_KEY`
 
 ## Test Configuration
 

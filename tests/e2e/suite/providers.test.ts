@@ -23,7 +23,6 @@ suite("Language Model Provider Test Suite", () => {
       if (availableModels.length === 0) {
         console.log("Language Model API not available or no providers registered");
         return;
-        return;
       }
 
       const modelIds = availableModels.map(model => `${model.vendor}:${model.id}`);
