@@ -142,7 +142,7 @@
     "quality-check": "bun run lint:check && bun run typecheck && bun run test:all",
     "pre-commit": "bun run quality-check",
     "update-proposed-api": "npx vscode-dts dev",
-    "package": "bunx vsce package",
+    "package": "bunx --bun vsce package",
     "local": "VERSION=$(node -p \"require('./package.json').version\") && code-insiders --install-extension ./copilot-boost-mode-$VERSION.vsix --force"
   },
   "devDependencies": {
