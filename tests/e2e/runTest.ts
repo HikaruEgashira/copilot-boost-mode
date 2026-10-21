@@ -1,5 +1,5 @@
 import * as path from "node:path";
-import { runTests } from "@vscode/test-electron";
+import { runTests, runVSCodeCommand } from "@vscode/test-electron";
 
 async function main() {
   try {
@@ -11,11 +11,13 @@ async function main() {
     // Passed to --extensionTestsPath
     const extensionTestsPath = path.resolve(__dirname, "./suite/index");
 
-    // Download VS Code, unzip it and run the integration test
+    const version = process.env.VSCODE_VERSION || "insiders";
+    await runVSCodeCommand(["--install-extension", "github.copilot-chat", "--force"], { version });
+
     await runTests({
       extensionDevelopmentPath,
       extensionTestsPath,
-      version: process.env.VSCODE_VERSION || 'insiders',
+      version,
       // The extension relies on proposed APIs (chatProvider), so make sure the
       // test instance enables them for the extension under development.
       launchArgs: [
