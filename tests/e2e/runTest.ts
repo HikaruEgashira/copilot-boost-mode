@@ -15,8 +15,7 @@ async function main() {
     await runTests({
       extensionDevelopmentPath,
       extensionTestsPath,
-      // Use VS Code Insiders for proposed API support
-      version: 'insiders',
+      version: process.env.VSCODE_VERSION || 'insiders',
       // The extension relies on proposed APIs (chatProvider), so make sure the
       // test instance enables them for the extension under development.
       launchArgs: [

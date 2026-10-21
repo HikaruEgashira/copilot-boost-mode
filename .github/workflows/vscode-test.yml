@@ -43,9 +43,9 @@ jobs:
     - name: Build extension
       run: bun run compile
       
-    - name: Install virtual display
+    - name: Install VS Code system dependencies
       if: runner.os == 'Linux'
-      run: sudo apt-get update && sudo apt-get install -y xvfb xauth
+      run: sudo apt-get update && sudo apt-get install -y xvfb xauth libgtk-3-0 libnss3 libgbm1 libasound2-dev
 
     - name: Run VS Code tests (Linux)
       if: runner.os == 'Linux'
