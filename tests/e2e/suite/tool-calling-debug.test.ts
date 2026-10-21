@@ -30,7 +30,6 @@ suite("Tool Calling Debug Test Suite", () => {
 
     if (process.env.ANTHROPIC_API_KEY) {
       await context.secrets.store("AnthropicCopilotBoostApiKey", process.env.ANTHROPIC_API_KEY);
-      console.log(`Set API key for Anthropic: ${process.env.ANTHROPIC_API_KEY.substring(0, 10)}...`);
     }
 
     return true;

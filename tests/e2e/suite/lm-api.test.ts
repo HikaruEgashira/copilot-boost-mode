@@ -29,7 +29,6 @@ suite("Language Model API Test Suite", () => {
     for (const [key, value] of Object.entries(apiKeys)) {
       if (value) {
         await context.secrets.store(key, value);
-        console.log(`Set API key for ${key}: ${value.substring(0, 10)}...`);
       }
     }
 
