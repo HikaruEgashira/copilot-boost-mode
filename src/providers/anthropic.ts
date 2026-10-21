@@ -90,8 +90,7 @@ export class AnthropicProvider implements vscode.LanguageModelChatProvider {
     });
 
     // Log configuration for debugging
-    logToolConfiguration("Anthropic", hasTools, tools, modelName, toolChoice, {
-    });
+    logToolConfiguration("Anthropic", hasTools, tools, modelName, toolChoice, {});
 
     const streamConfig = {
       model: anthropic(modelName),

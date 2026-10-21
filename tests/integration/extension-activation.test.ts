@@ -8,7 +8,7 @@ const mockCreateGroq = mock(() => ({}));
 
 mock.module("@ai-sdk/anthropic", () => ({ createAnthropic: mockCreateAnthropic }));
 mock.module("@ai-sdk/openai", () => ({ createOpenAI: mockCreateOpenAI }));
-mock.module("@ai-sdk/google", () => ({ createGoogle: mockCreateGoogle }));
+mock.module("@ai-sdk/google", () => ({ createGoogleGenerativeAI: mockCreateGoogle }));
 mock.module("@ai-sdk/groq", () => ({ createGroq: mockCreateGroq }));
 mock.module("ai", () => ({ streamText: mock(() => Promise.resolve({})), jsonSchema: mock(s => s) }));
 mock.module("node:child_process", () => ({ execSync: mock(() => '{}') }));
@@ -81,6 +81,8 @@ mock.module("vscode", () => mockVscode);
 
 describe("Extension Integration Tests", () => {
   beforeEach(() => {
+    mockExtensionContext.secrets.get.mockImplementation(() => Promise.resolve("test-key"));
+    mockVscode.lm.registerChatModelProvider.mockImplementation(() => mockDisposable);
     // Reset mocks
     mockExtensionContext.subscriptions.length = 0;
     Object.values(mockVscode.commands).forEach(m => m.mockClear());
@@ -183,7 +185,7 @@ describe("Extension Integration Tests", () => {
       const { activate } = await import("../../src/extension");
 
       // Should not throw when API keys are missing
-      expect(activate(mockExtensionContext as any)).resolves.not.toThrow();
+      await expect(activate(mockExtensionContext as any)).resolves.toBeDefined();
 
       // Should still register providers (they handle missing keys internally)
       expect(mockVscode.lm.registerChatModelProvider).toHaveBeenCalledTimes(5);

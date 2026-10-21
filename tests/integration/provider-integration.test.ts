@@ -1,3 +1,4 @@
+import { MockVSCode } from "../mocks/vscode-mock";
 import { describe, test, expect, beforeAll, afterAll, beforeEach, mock } from "bun:test";
 
 /**
@@ -12,6 +13,7 @@ import "../setup";
 const mockProviders = new Map<string, any>();
 
 const mockVSCode = {
+  ...MockVSCode.createMockVSCode(),
   lm: {
     registerChatProvider: mock((id: string, provider: any) => {
       mockProviders.set(id, provider);
@@ -82,8 +84,8 @@ const mockVSCode = {
     executeCommand: mock()
   },
   window: {
-    showErrorMessage: mock(),
-    showInformationMessage: mock(),
+    showErrorMessage: mock(async () => undefined),
+    showInformationMessage: mock(async () => undefined),
     createOutputChannel: mock(() => ({
       appendLine: mock(),
       show: mock(),
@@ -112,12 +114,12 @@ mock.module("@ai-sdk/google", () => ({
 }));
 
 mock.module("ai", () => ({
-  streamText: mock(async (config: any) => ({
+  streamText: mock((config: any) => ({
     fullStream: {
       [Symbol.asyncIterator]: async function* () {
-        yield { type: "text-delta", textDelta: "Hello" };
-        yield { type: "text-delta", textDelta: " from " };
-        yield { type: "text-delta", textDelta: config.model?.model || "AI" };
+        yield { type: "text-delta", text: "Hello" };
+        yield { type: "text-delta", text: " from " };
+        yield { type: "text-delta", text: config.model?.model || "AI" };
         yield { type: "finish" };
       }
     }
@@ -146,6 +148,7 @@ describe("Provider Integration Tests", () => {
   });
 
   beforeEach(() => {
+    mockContext = new mockVSCode.ExtensionContext();
     mockProviders.clear();
     // Clear all mock calls
     mockVSCode.lm.registerChatModelProvider.mockClear();
@@ -196,7 +199,7 @@ describe("Provider Integration Tests", () => {
 
     // Test provider response
     await anthropicProvider.provideLanguageModelResponse(
-      [{ role: 1, content: "Hello" }],
+      [{ role: 1, content: [new mockVSCode.LanguageModelTextPart("Hello")] }],
       {},
       "test-extension",
       mockProgress,
@@ -222,7 +225,7 @@ describe("Provider Integration Tests", () => {
 
       await expect(
         anthropicProvider.provideLanguageModelResponse(
-          [{ role: 1, content: "Hello" }],
+          [{ role: 1, content: [new mockVSCode.LanguageModelTextPart("Hello")] }],
           {},
           "test-extension",
           mockProgress,
@@ -247,7 +250,7 @@ describe("Provider Integration Tests", () => {
       ];
 
       await anthropicProvider.provideLanguageModelResponse(
-        [{ role: 1, content: "Hello" }],
+        [{ role: 1, content: [new mockVSCode.LanguageModelTextPart("Hello")] }],
         { tools: malformedTools },
         "test-extension",
         mockProgress,
@@ -276,7 +279,7 @@ describe("Provider Integration Tests", () => {
 
         // Each provider should handle basic text generation
         await provider.provideLanguageModelResponse(
-          [{ role: 1, content: "Hello" }],
+          [{ role: 1, content: [new mockVSCode.LanguageModelTextPart("Hello")] }],
           {},
           "test-extension",
           mockProgress,
@@ -288,7 +291,8 @@ describe("Provider Integration Tests", () => {
       }
     });
 
-    test("all providers should support token counting", () => {
+    test("all providers should support token counting", async () => {
+      await activate(mockContext);
       const providerIds = ["anthropic", "openai", "groq", "gemini", "openrouter"];
 
       for (const providerId of providerIds) {
@@ -323,7 +327,7 @@ describe("Provider Integration Tests", () => {
       };
 
       await anthropicProvider.provideLanguageModelResponse(
-        [{ role: 1, content: "Hello" }],
+        [{ role: 1, content: [new mockVSCode.LanguageModelTextPart("Hello")] }],
         {},
         "test-extension",
         mockProgress,

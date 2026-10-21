@@ -1,19 +1,19 @@
+import { MockVSCode } from "../mocks/vscode-mock";
+import { providerContext } from "../utils/provider-test-base";
 import { describe, test, expect, beforeEach, mock } from "bun:test";
 
 // Mock AI SDK functions
-const mockStreamText = mock(() => Promise.resolve({
-  textStream: (async function* (): AsyncGenerator<string, void, unknown> {
-    yield "Hello";
-    yield " from";
-    yield " AI";
+const mockStreamText = mock(() => ({
+  fullStream: (async function* () {
+    yield { type: "text-delta", text: "Hello" };
+    yield { type: "text-delta", text: " from" };
+    yield { type: "text-delta", text: " AI" };
   })(),
   toolCalls: [],
   toolResults: []
 }));
 
-const mockCreateAnthropic = mock(() => ({
-  model: mock(() => ({}))
-}));
+const mockCreateAnthropic = mock(() => (model: string) => ({model}));
 
 mock.module("ai", () => ({
   streamText: mockStreamText,
@@ -44,6 +44,7 @@ const mockWorkspaceConfig = {
 };
 
 const mockVscode = {
+  ...MockVSCode.createMockVSCode(),
   window: {
     createOutputChannel: mock(() => ({
       appendLine: mock(() => {}),
@@ -61,7 +62,9 @@ const mockVscode = {
     executeCommand: mock(() => Promise.resolve())
   },
   LanguageModelChatMessage: class {
-    constructor(public role: number, public content: any) {}
+    constructor(public role: number, public content: any) {
+      if (typeof content === "string") this.content = [new mockVscode.LanguageModelTextPart(content)];
+    }
   },
   LanguageModelChatMessageRole: {
     User: 1,
@@ -95,7 +98,7 @@ describe("Provider Workflow Integration Tests", () => {
     test("should complete full chat flow with Anthropic provider", async () => {
       const { AnthropicProvider } = await import("../../src/providers/anthropic");
 
-      const provider = new AnthropicProvider("test-api-key");
+      const provider = new AnthropicProvider(providerContext("test-api-key") as any);
 
       const messages = [
         new mockVscode.LanguageModelChatMessage(
@@ -110,11 +113,11 @@ describe("Provider Workflow Integration Tests", () => {
       };
 
       // Mock successful response
-      mockStreamText.mockResolvedValueOnce({
-        textStream: (async function* (): AsyncGenerator<string, void, unknown> {
-          yield "I'm doing well";
-          yield ", thank you";
-          yield " for asking!";
+      mockStreamText.mockReturnValueOnce({
+        fullStream: (async function* () {
+          yield { type: "text-delta", text: "I'm doing well" };
+          yield { type: "text-delta", text: ", thank you" };
+          yield { type: "text-delta", text: " for asking!" };
         })(),
         toolCalls: [],
         toolResults: []
@@ -129,9 +132,9 @@ describe("Provider Workflow Integration Tests", () => {
       );
 
       // Verify API was called
-      expect(mockCreateAnthropic).toHaveBeenCalledWith({
+      expect(mockCreateAnthropic).toHaveBeenCalledWith(expect.objectContaining({
         apiKey: "test-api-key"
-      });
+      }));
 
       expect(mockStreamText).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -142,15 +145,15 @@ describe("Provider Workflow Integration Tests", () => {
 
       // Verify progress was reported
       expect(mockProgress.report).toHaveBeenCalledTimes(3);
-      expect(mockProgress.report).toHaveBeenCalledWith({ fragment: "I'm doing well" });
-      expect(mockProgress.report).toHaveBeenCalledWith({ fragment: ", thank you" });
-      expect(mockProgress.report).toHaveBeenCalledWith({ fragment: " for asking!" });
+      expect(mockProgress.report).toHaveBeenCalledWith({ index: 0, part: new mockVscode.LanguageModelTextPart("I'm doing well") });
+      expect(mockProgress.report).toHaveBeenCalledWith({ index: 0, part: new mockVscode.LanguageModelTextPart(", thank you") });
+      expect(mockProgress.report).toHaveBeenCalledWith({ index: 0, part: new mockVscode.LanguageModelTextPart(" for asking!") });
     });
 
     test("should handle tool calling workflow", async () => {
       const { AnthropicProvider } = await import("../../src/providers/anthropic");
 
-      const provider = new AnthropicProvider("test-api-key");
+      const provider = new AnthropicProvider(providerContext("test-api-key") as any);
 
       const messages = [
         new mockVscode.LanguageModelChatMessage(
@@ -161,6 +164,7 @@ describe("Provider Workflow Integration Tests", () => {
 
       const options = {
         justification: "Testing tool calling",
+        toolMode: mockVscode.LanguageModelChatToolMode.Auto,
         tools: [
           {
             name: "search",
@@ -177,9 +181,9 @@ describe("Provider Workflow Integration Tests", () => {
       };
 
       // Mock response with tool calls
-      mockStreamText.mockResolvedValueOnce({
-        textStream: (async function* (): AsyncGenerator<string, void, unknown> {
-          yield "I'll search for that information.";
+      mockStreamText.mockReturnValueOnce({
+        fullStream: (async function* () {
+          yield { type: "text-delta", text: "I'll search for that information." };
         })(),
         toolCalls: [],
         toolResults: []
@@ -199,7 +203,7 @@ describe("Provider Workflow Integration Tests", () => {
           tools: expect.objectContaining({
             search: expect.objectContaining({
               description: "Search for information",
-              parameters: expect.any(Object)
+              inputSchema: expect.any(Object)
             })
           }),
           toolChoice: "auto"
@@ -210,7 +214,7 @@ describe("Provider Workflow Integration Tests", () => {
     test("should handle conversation with multiple messages", async () => {
       const { AnthropicProvider } = await import("../../src/providers/anthropic");
 
-      const provider = new AnthropicProvider("test-api-key");
+      const provider = new AnthropicProvider(providerContext("test-api-key") as any);
 
       const messages = [
         new mockVscode.LanguageModelChatMessage(
@@ -231,11 +235,11 @@ describe("Provider Workflow Integration Tests", () => {
         justification: "Testing conversation flow"
       };
 
-      mockStreamText.mockResolvedValueOnce({
-        textStream: (async function* (): AsyncGenerator<string, void, unknown> {
-          yield "Why did the cat";
-          yield " sit on the computer?";
-          yield " Because it wanted to keep an eye on the mouse!";
+      mockStreamText.mockReturnValueOnce({
+        fullStream: (async function* () {
+          yield { type: "text-delta", text: "Why did the cat" };
+          yield { type: "text-delta", text: " sit on the computer?" };
+          yield { type: "text-delta", text: " Because it wanted to keep an eye on the mouse!" };
         })(),
         toolCalls: [],
         toolResults: []
@@ -264,7 +268,7 @@ describe("Provider Workflow Integration Tests", () => {
     test("should handle cancellation during streaming", async () => {
       const { AnthropicProvider } = await import("../../src/providers/anthropic");
 
-      const provider = new AnthropicProvider("test-api-key");
+      const provider = new AnthropicProvider(providerContext("test-api-key") as any);
 
       const messages = [
         new mockVscode.LanguageModelChatMessage(
@@ -285,11 +289,11 @@ describe("Provider Workflow Integration Tests", () => {
         })
       };
 
-      mockStreamText.mockResolvedValueOnce({
-        textStream: (async function* (): AsyncGenerator<string, void, unknown> {
-          yield "Once upon a time";
+      mockStreamText.mockReturnValueOnce({
+        fullStream: (async function* () {
+          yield { type: "text-delta", text: "Once upon a time" };
           await new Promise(resolve => setTimeout(resolve, 20)); // Delay to allow cancellation
-          yield " there was a cat";
+          yield { type: "text-delta", text: " there was a cat" };
         })(),
         toolCalls: [],
         toolResults: []
@@ -310,7 +314,7 @@ describe("Provider Workflow Integration Tests", () => {
     test("should handle API errors gracefully", async () => {
       const { AnthropicProvider } = await import("../../src/providers/anthropic");
 
-      const provider = new AnthropicProvider("test-api-key");
+      const provider = new AnthropicProvider(providerContext("test-api-key") as any);
 
       const messages = [
         new mockVscode.LanguageModelChatMessage(
@@ -320,7 +324,7 @@ describe("Provider Workflow Integration Tests", () => {
       ];
 
       // Mock API error
-      mockStreamText.mockRejectedValueOnce(new Error("API quota exceeded"));
+      mockStreamText.mockImplementationOnce(() => { throw new Error("API quota exceeded"); });
 
       expect(provider.provideLanguageModelResponse(
         messages as any,
@@ -334,7 +338,7 @@ describe("Provider Workflow Integration Tests", () => {
     test("should handle empty responses", async () => {
       const { AnthropicProvider } = await import("../../src/providers/anthropic");
 
-      const provider = new AnthropicProvider("test-api-key");
+      const provider = new AnthropicProvider(providerContext("test-api-key") as any);
 
       const messages = [
         new mockVscode.LanguageModelChatMessage(
@@ -343,8 +347,8 @@ describe("Provider Workflow Integration Tests", () => {
         )
       ];
 
-      mockStreamText.mockResolvedValueOnce({
-        textStream: (async function* (): AsyncGenerator<string, void, unknown> {
+      mockStreamText.mockReturnValueOnce({
+        fullStream: (async function* () {
           // Empty stream
         })(),
         toolCalls: [],
@@ -370,7 +374,7 @@ describe("Provider Workflow Integration Tests", () => {
 
       mockWorkspaceConfig.get.mockReturnValueOnce("claude-sonnet-4-20250514");
 
-      const provider = new AnthropicProvider("test-api-key");
+      const provider = new AnthropicProvider(providerContext("test-api-key") as any);
 
       const messages = [
         new mockVscode.LanguageModelChatMessage(
@@ -379,9 +383,9 @@ describe("Provider Workflow Integration Tests", () => {
         )
       ];
 
-      mockStreamText.mockResolvedValueOnce({
-        textStream: (async function* (): AsyncGenerator<string, void, unknown> {
-          yield "Hello!";
+      mockStreamText.mockReturnValueOnce({
+        fullStream: (async function* () {
+          yield { type: "text-delta", text: "Hello!" };
         })(),
         toolCalls: [],
         toolResults: []

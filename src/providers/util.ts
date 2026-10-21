@@ -26,14 +26,17 @@ export const convertChatToModelMessage = (message: vscode.LanguageModelChatMessa
         toolResultParts.push({
           type: "tool-result",
           toolCallId: item.callId,
-          output: { type: "text" as const, value: item.content
-            .map((item) => {
-              if (item instanceof vscode.LanguageModelTextPart) {
-                return item.value;
-              }
-              return JSON.stringify(item);
-            })
-            .join(" ,") },
+          output: {
+            type: "text" as const,
+            value: item.content
+              .map((item) => {
+                if (item instanceof vscode.LanguageModelTextPart) {
+                  return item.value;
+                }
+                return JSON.stringify(item);
+              })
+              .join(" ,"),
+          },
           toolName: "test",
         });
       }
