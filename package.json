@@ -162,6 +162,7 @@
     "@ai-sdk/groq": "^2.0.0",
     "@ai-sdk/openai": "^2.0.0",
     "@vscode/prompt-tsx-elements": "^0.1.0",
-    "ai": "^5.0.89"
+    "ai": "^5.0.89",
+    "zod": "^3.25.76"
   }
 }
