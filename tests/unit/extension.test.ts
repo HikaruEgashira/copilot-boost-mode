@@ -57,7 +57,7 @@ const mockWindow = {
 };
 
 const mockLm = {
-  registerChatModelProvider: mock(() => ({ dispose: mock(() => {}) }))
+  registerLanguageModelChatProvider: mock(() => ({ dispose: mock(() => {}) }))
 };
 
 const mockVscode = {
@@ -112,48 +112,17 @@ describe("Extension", () => {
     test("should register all language model providers", async () => {
       await activate(mockExtensionContext as any);
 
-      expect(mockLm.registerChatModelProvider).toHaveBeenCalledWith("anthropic", expect.any(Object), expect.objectContaining({
-        vendor: "boost",
-        name: "Anthropic",
-        family: "boost",
-        version: "1.0.0",
-        maxInputTokens: 200000,
-        maxOutputTokens: 8192,
-        isDefault: true,
-        isUserSelectable: true,
-        capabilities: {
-          agentMode: true,
-          toolCalling: true,
-          vision: true
-        }
-      }));
+      expect(mockLm.registerLanguageModelChatProvider).toHaveBeenCalledWith("boost", expect.any(Object));
+      const provider = mockLm.registerLanguageModelChatProvider.mock.calls[0][1];
+      expect(provider.provideLanguageModelChatInformation().map((model: any) => model.id))
+        .toEqual(["anthropic", "groq", "gemini", "openrouter", "openai"]);
 
-      expect(mockLm.registerChatModelProvider).toHaveBeenCalledWith("groq", expect.any(Object), expect.objectContaining({
-        vendor: "boost",
-        name: "Groq"
-      }));
-
-      expect(mockLm.registerChatModelProvider).toHaveBeenCalledWith("gemini", expect.any(Object), expect.objectContaining({
-        vendor: "boost",
-        name: "Gemini"
-      }));
-
-      expect(mockLm.registerChatModelProvider).toHaveBeenCalledWith("openrouter", expect.any(Object), expect.objectContaining({
-        vendor: "boost",
-        name: "OpenRouter"
-      }));
-
-      expect(mockLm.registerChatModelProvider).toHaveBeenCalledWith("openai", expect.any(Object), expect.objectContaining({
-        vendor: "boost",
-        name: "OpenAI"
-      }));
     });
 
     test("should add disposables to subscriptions", async () => {
       await activate(mockExtensionContext as any);
 
-      // Should have at least 11 subscriptions (6 commands + 5 providers + test commands + test runner)
-      expect(mockExtensionContext.subscriptions.push).toHaveBeenCalledTimes(11);
+      expect(mockExtensionContext.subscriptions.push).toHaveBeenCalledTimes(7);
     });
   });
 

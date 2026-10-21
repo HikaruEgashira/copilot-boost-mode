@@ -44,91 +44,45 @@ export async function activate(context: vscode.ExtensionContext) {
   const openrouter = new OpenRouterProvider(openrouterApiKey);
   const openai = new OpenAIProvider(openaiApiKey);
 
-  // Register the providers
-  const AnthropicDisposable = vscode.lm.registerChatModelProvider("anthropic", Anthropic, {
-    vendor: "boost",
-    name: "Anthropic",
-    family: "boost",
-    version: "1.0.0",
-    maxInputTokens: 200000,
-    maxOutputTokens: 8192,
-    isDefault: true,
-    isUserSelectable: true,
-    capabilities: {
-      agentMode: true,
-      toolCalling: true,
-      vision: true,
-    },
-  });
-  context.subscriptions.push(AnthropicDisposable);
-
-  const groqDisposable = vscode.lm.registerChatModelProvider("groq", groq, {
-    vendor: "boost",
-    name: "Groq",
-    family: "boost",
-    version: "1.0.0",
-    maxInputTokens: 200000,
-    maxOutputTokens: 8192,
-    isDefault: true,
-    isUserSelectable: true,
-    capabilities: {
-      agentMode: true,
-      toolCalling: true,
-      vision: true,
-    },
-  });
-  context.subscriptions.push(groqDisposable);
-
-  const geminiDisposable = vscode.lm.registerChatModelProvider("gemini", gemini, {
-    vendor: "boost",
-    name: "Gemini",
-    family: "boost",
-    version: "1.0.0",
-    maxInputTokens: 200000,
-    maxOutputTokens: 8192,
-    isDefault: true,
-    isUserSelectable: true,
-    capabilities: {
-      agentMode: true,
-      toolCalling: true,
-      vision: true,
-    },
-  });
-  context.subscriptions.push(geminiDisposable);
-
-  const openrouterDisposable = vscode.lm.registerChatModelProvider("openrouter", openrouter, {
-    vendor: "boost",
-    name: "OpenRouter",
-    family: "boost",
-    version: "1.0.0",
-    maxInputTokens: 200000,
-    maxOutputTokens: 8192,
-    isDefault: true,
-    isUserSelectable: true,
-    capabilities: {
-      agentMode: true,
-      toolCalling: true,
-      vision: true,
-    },
-  });
-  context.subscriptions.push(openrouterDisposable);
-
-  const openaiDisposable = vscode.lm.registerChatModelProvider("openai", openai, {
-    vendor: "boost",
-    name: "OpenAI",
-    family: "boost",
-    version: "1.0.0",
-    maxInputTokens: 200000,
-    maxOutputTokens: 8192,
-    isDefault: true,
-    isUserSelectable: true,
-    capabilities: {
-      agentMode: true,
-      toolCalling: true,
-      vision: true,
-    },
-  });
-  context.subscriptions.push(openaiDisposable);
+  const providers = new Map<string, Pick<AnthropicProvider, "provideLanguageModelResponse" | "provideTokenCount">>([
+    ["anthropic", Anthropic],
+    ["groq", groq],
+    ["gemini", gemini],
+    ["openrouter", openrouter],
+    ["openai", openai],
+  ]);
+  context.subscriptions.push(
+    vscode.lm.registerLanguageModelChatProvider("boost", {
+      provideLanguageModelChatInformation: () =>
+        [...providers.keys()].map((id) => ({
+          id,
+          name: id,
+          family: "boost",
+          version: "1.0.0",
+          maxInputTokens: 200000,
+          maxOutputTokens: 8192,
+          capabilities: { toolCalling: true },
+        })),
+      provideLanguageModelChatResponse: async (model, messages, options, progress, token) => {
+        const provider = providers.get(model.id);
+        if (!provider) throw new Error(`Unknown model: ${model.id}`);
+        await provider.provideLanguageModelResponse(
+          messages,
+          options,
+          "",
+          {
+            report: (fragment) => progress.report(fragment.part),
+          },
+          token
+        );
+      },
+      provideTokenCount: async (model, text, token) => {
+        const provider = providers.get(model.id);
+        if (!provider) throw new Error(`Unknown model: ${model.id}`);
+        return provider.provideTokenCount(text, token);
+      },
+    })
+  );
 
   // Export context for testing
   return { context };
