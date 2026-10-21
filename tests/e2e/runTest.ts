@@ -12,7 +12,7 @@ async function main() {
     const extensionTestsPath = path.resolve(__dirname, "./suite/index");
 
     const version = process.env.VSCODE_VERSION || "insiders";
-    await runVSCodeCommand(["--install-extension", "github.copilot-chat", "--force"], { version });
+    await runVSCodeCommand(["--enable-extension", "github.copilot-chat"], { version });
 
     await runTests({
       extensionDevelopmentPath,
