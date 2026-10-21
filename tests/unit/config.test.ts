@@ -80,9 +80,9 @@ describe("Configuration", () => {
     const scripts = packageJson.scripts;
     expect(scripts).toBeDefined();
 
-    expect(scripts.test).toBe("bun test --isolate");
+    expect(scripts.test).toBe("bun test --isolate ./tests/unit ./tests/integration");
     expect(scripts["test:unit"]).toBe("bun test --isolate tests/unit");
     expect(scripts["test:integration"]).toBe("bun test --isolate tests/integration");
-    expect(scripts["test:coverage"]).toBe("bun test --isolate --coverage");
+    expect(scripts["test:coverage"]).toBe("bun test --isolate --coverage ./tests/unit ./tests/integration");
   });
 });

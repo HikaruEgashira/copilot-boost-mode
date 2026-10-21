@@ -43,6 +43,10 @@ jobs:
     - name: Build extension
       run: bun run compile
       
+    - name: Install virtual display
+      if: runner.os == 'Linux'
+      run: sudo apt-get update && sudo apt-get install -y xvfb xauth
+
     - name: Run VS Code tests (Linux)
       if: runner.os == 'Linux'
       run: xvfb-run -a bun run test:vscode
