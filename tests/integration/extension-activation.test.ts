@@ -8,7 +8,7 @@ const mockCreateGroq = mock(() => ({}));
 
 mock.module("@ai-sdk/anthropic", () => ({ createAnthropic: mockCreateAnthropic }));
 mock.module("@ai-sdk/openai", () => ({ createOpenAI: mockCreateOpenAI }));
-mock.module("@ai-sdk/google", () => ({ createGoogle: mockCreateGoogle }));
+mock.module("@ai-sdk/google", () => ({ createGoogleGenerativeAI: mockCreateGoogle }));
 mock.module("@ai-sdk/groq", () => ({ createGroq: mockCreateGroq }));
 mock.module("ai", () => ({ streamText: mock(() => Promise.resolve({})), jsonSchema: mock(s => s) }));
 mock.module("node:child_process", () => ({ execSync: mock(() => '{}') }));
@@ -57,7 +57,7 @@ const mockVscode = {
     }))
   },
   lm: {
-    registerChatModelProvider: mock(() => mockDisposable),
+    registerLanguageModelChatProvider: mock(() => mockDisposable),
     selectChatModels: mock(() => Promise.resolve([]))
   },
   LanguageModelChatMessage: class {
@@ -81,6 +81,8 @@ mock.module("vscode", () => mockVscode);
 
 describe("Extension Integration Tests", () => {
   beforeEach(() => {
+    mockExtensionContext.secrets.get.mockImplementation(() => Promise.resolve("test-key"));
+    mockVscode.lm.registerLanguageModelChatProvider.mockImplementation(() => mockDisposable);
     // Reset mocks
     mockExtensionContext.subscriptions.length = 0;
     Object.values(mockVscode.commands).forEach(m => m.mockClear());
@@ -126,53 +128,7 @@ describe("Extension Integration Tests", () => {
         expect.any(Function)
       );
 
-      // Verify all providers are registered
-      expect(mockVscode.lm.registerChatModelProvider).toHaveBeenCalledWith(
-        "anthropic",
-        expect.any(Object),
-        expect.objectContaining({
-          vendor: "boost",
-          name: "Anthropic",
-          family: "boost"
-        })
-      );
-
-      expect(mockVscode.lm.registerChatModelProvider).toHaveBeenCalledWith(
-        "groq",
-        expect.any(Object),
-        expect.objectContaining({
-          vendor: "boost",
-          name: "Groq"
-        })
-      );
-
-      expect(mockVscode.lm.registerChatModelProvider).toHaveBeenCalledWith(
-        "gemini",
-        expect.any(Object),
-        expect.objectContaining({
-          vendor: "boost",
-          name: "Gemini"
-        })
-      );
-
-      expect(mockVscode.lm.registerChatModelProvider).toHaveBeenCalledWith(
-        "openrouter",
-        expect.any(Object),
-        expect.objectContaining({
-          vendor: "boost",
-          name: "OpenRouter"
-        })
-      );
-
-      expect(mockVscode.lm.registerChatModelProvider).toHaveBeenCalledWith(
-        "openai",
-        expect.any(Object),
-        expect.objectContaining({
-          vendor: "boost",
-          name: "OpenAI"
-        })
-      );
-
+      expect(mockVscode.lm.registerLanguageModelChatProvider).toHaveBeenCalledWith("boost", expect.any(Object));
       // Verify disposables are tracked
       expect(mockExtensionContext.subscriptions.length).toBeGreaterThan(0);
     });
@@ -183,10 +139,10 @@ describe("Extension Integration Tests", () => {
       const { activate } = await import("../../src/extension");
 
       // Should not throw when API keys are missing
-      expect(activate(mockExtensionContext as any)).resolves.not.toThrow();
+      await expect(activate(mockExtensionContext as any)).resolves.toBeDefined();
 
       // Should still register providers (they handle missing keys internally)
-      expect(mockVscode.lm.registerChatModelProvider).toHaveBeenCalledTimes(5);
+      expect(mockVscode.lm.registerLanguageModelChatProvider).toHaveBeenCalledTimes(1);
     });
 
     test("should properly clean up on deactivation", async () => {
@@ -252,24 +208,11 @@ describe("Extension Integration Tests", () => {
 
       await activate(mockExtensionContext as any);
 
-      // Verify all provider types are created
-      const providerRegistrations = mockVscode.lm.registerChatModelProvider.mock.calls;
+      const provider = mockVscode.lm.registerLanguageModelChatProvider.mock.calls[0][1];
+      const models = provider.provideLanguageModelChatInformation();
+      expect(models).toHaveLength(5);
+      expect(models[0]).toMatchObject({ id: "anthropic", family: "boost", capabilities: { toolCalling: true } });
 
-      expect(providerRegistrations).toHaveLength(5);
-
-      // Check each provider configuration
-      const anthropicConfig = providerRegistrations.find(call => call[0] === "anthropic")?.[2];
-      expect(anthropicConfig).toBeDefined();
-      expect(anthropicConfig).toMatchObject({
-        vendor: "boost",
-        name: "Anthropic",
-        family: "boost",
-        maxInputTokens: expect.any(Number),
-        maxOutputTokens: expect.any(Number),
-        isDefault: expect.any(Boolean),
-        isUserSelectable: expect.any(Boolean),
-        capabilities: expect.any(Object)
-      });
     });
   });
 
@@ -284,7 +227,7 @@ describe("Extension Integration Tests", () => {
     });
 
     test("should handle provider registration errors", async () => {
-      mockVscode.lm.registerChatModelProvider.mockImplementationOnce(() => {
+      mockVscode.lm.registerLanguageModelChatProvider.mockImplementationOnce(() => {
         throw new Error("Provider registration failed");
       });
 

@@ -22,7 +22,6 @@
   ],
   "include": [
     "src",
-    "tests/e2e",
-    "vscode.proposed.chatProvider.d.ts"
+    "tests/e2e"
   ]
 }

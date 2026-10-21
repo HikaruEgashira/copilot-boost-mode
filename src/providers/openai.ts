@@ -4,7 +4,7 @@ import * as vscode from "vscode";
 import { logger } from "../logger";
 import { convertChatToModelMessage, logToolConfiguration, processTools } from "./util";
 
-export class OpenAIProvider implements vscode.LanguageModelChatProvider {
+export class OpenAIProvider {
   apiKey: string | undefined;
 
   constructor(apiKey: string | undefined) {
@@ -32,10 +32,10 @@ export class OpenAIProvider implements vscode.LanguageModelChatProvider {
   }
 
   async provideLanguageModelResponse(
-    messages: vscode.LanguageModelChatMessage[],
-    options: vscode.LanguageModelChatRequestOptions,
+    messages: readonly vscode.LanguageModelChatRequestMessage[],
+    options: vscode.ProvideLanguageModelChatResponseOptions,
     _extensionId: string,
-    progress: vscode.Progress<vscode.ChatResponseFragment2>,
+    progress: vscode.Progress<{ index: number; part: vscode.LanguageModelResponsePart }>,
     token: vscode.CancellationToken
     // biome-ignore lint/suspicious/noExplicitAny: <explanation>
   ): Promise<any> {
@@ -120,7 +120,7 @@ export class OpenAIProvider implements vscode.LanguageModelChatProvider {
   }
 
   provideTokenCount(
-    _text: string | vscode.LanguageModelChatMessage,
+    _text: string | vscode.LanguageModelChatRequestMessage,
     _token: vscode.CancellationToken
   ): Thenable<number> {
     try {

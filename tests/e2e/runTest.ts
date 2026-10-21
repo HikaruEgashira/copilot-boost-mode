@@ -11,18 +11,14 @@ async function main() {
     // Passed to --extensionTestsPath
     const extensionTestsPath = path.resolve(__dirname, "./suite/index");
 
-    // Download VS Code, unzip it and run the integration test
+    const version = process.env.VSCODE_VERSION || "insiders";
+
     await runTests({
       extensionDevelopmentPath,
       extensionTestsPath,
-      // Use VS Code Insiders for proposed API support
-      version: 'insiders',
-      // The extension relies on proposed APIs (chatProvider), so make sure the
-      // test instance enables them for the extension under development.
+      version,
       launchArgs: [
         "--disable-gpu",
-        "--enable-proposed-api",
-        "HikaruEgashira.copilot-boost-mode",
       ],
       // Install required extensions
       extensionTestsEnv: {

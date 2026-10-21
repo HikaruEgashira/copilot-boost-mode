@@ -15,6 +15,8 @@ export interface ProviderTestConfig {
   createFunction: string;
 }
 
+export const providerContext = (key: string | undefined) => ({ secrets: { get: async () => key } });
+
 export function createProviderTests(config: ProviderTestConfig) {
   const { ProviderClass, providerName, defaultModel, sdkPackage, createFunction } = config;
 
@@ -69,7 +71,7 @@ export function createProviderTests(config: ProviderTestConfig) {
       }));
 
       // Mock provider utilities
-      mock.module("../../../src/providers/util", () => ({
+      mock.module("../../src/providers/util", () => ({
         convertChatToModelMessage: mockConvertChatToModelMessage,
         processTools: mockProcessTools,
         logToolConfiguration: mockLogToolConfiguration
@@ -77,20 +79,20 @@ export function createProviderTests(config: ProviderTestConfig) {
     });
 
     describe("Constructor", () => {
-      test("should initialize with API key", () => {
-        provider = new ProviderClass("test-api-key");
-        expect(provider.apiKey).toBe("test-api-key");
+      test("should initialize with API key", async () => {
+        provider = new ProviderClass(providerContext("test-api-key") as any);
+        expect(await (provider as any).context.secrets.get("AnthropicCopilotBoostApiKey")).toBe("test-api-key");
       });
 
-      test("should initialize without API key", () => {
-        provider = new ProviderClass(undefined);
-        expect(provider.apiKey).toBeUndefined();
+      test("should initialize without API key", async () => {
+        provider = new ProviderClass(providerContext(undefined) as any);
+        expect(await (provider as any).context.secrets.get("AnthropicCopilotBoostApiKey")).toBeUndefined();
       });
     });
 
     describe("API Key Validation", () => {
       test("should throw error when no API key is set", async () => {
-        provider = new ProviderClass(undefined);
+        provider = new ProviderClass(providerContext(undefined) as any);
         MockVSCode.setConfiguration(`copilot-boost-mode.${providerName.toLowerCase()}`, {
           modelName: defaultModel
         });
@@ -111,7 +113,7 @@ export function createProviderTests(config: ProviderTestConfig) {
 
     describe("Streaming Response", () => {
       beforeEach(() => {
-        provider = new ProviderClass("test-api-key");
+        provider = new ProviderClass(providerContext("test-api-key") as any);
         MockVSCode.setConfiguration(`copilot-boost-mode.${providerName.toLowerCase()}`, {
           modelName: defaultModel
         });
@@ -203,7 +205,7 @@ export function createProviderTests(config: ProviderTestConfig) {
 
     describe("Configuration", () => {
       beforeEach(() => {
-        provider = new ProviderClass("test-api-key");
+        provider = new ProviderClass(providerContext("test-api-key") as any);
       });
 
       test("should use configured model", async () => {
@@ -246,7 +248,7 @@ export function createProviderTests(config: ProviderTestConfig) {
 
     describe("Progress Reporting", () => {
       beforeEach(() => {
-        provider = new ProviderClass("test-api-key");
+        provider = new ProviderClass(providerContext("test-api-key") as any);
         MockVSCode.setConfiguration(`copilot-boost-mode.${providerName.toLowerCase()}`, {
           modelName: defaultModel
         });

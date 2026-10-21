@@ -8,23 +8,17 @@
     "url": "https://github.com/HikaruEgashira/copilot-boost-mode.git"
   },
   "engines": {
-    "vscode": "^1.101.0"
+    "vscode": "^1.104.0"
   },
   "version": "0.0.6",
   "categories": [
     "Other"
   ],
   "icon": "logo.png",
-  "enabledApiProposals": [
-    "chatProvider"
-  ],
   "activationEvents": [
     "onStartupFinished"
   ],
   "contributes": {
-    "languageModels": {
-      "vendor": "boost"
-    },
     "commands": [
       {
         "command": "copilot-boost-mode.anthropic.setKey",
@@ -119,7 +113,13 @@
           }
         }
       }
-    }
+    },
+    "languageModelChatProviders": [
+      {
+        "vendor": "boost",
+        "displayName": "Copilot Boost Mode"
+      }
+    ]
   },
   "main": "./out/extension.js",
   "scripts": {
@@ -130,18 +130,18 @@
     "lint": "npx @biomejs/biome check --write ./src",
     "lint:check": "npx @biomejs/biome check ./src",
     "typecheck": "tsc --noEmit",
-    "test": "bun test",
-    "test:unit": "bun test tests/unit",
-    "test:integration": "bun test tests/integration",
-    "test:watch": "bun test --watch",
-    "test:coverage": "bun test --coverage",
+    "test": "bun test --isolate ./tests/unit ./tests/integration",
+    "test:unit": "bun test --isolate tests/unit",
+    "test:integration": "bun test --isolate tests/integration",
+    "test:watch": "bun test --isolate --watch ./tests/unit ./tests/integration",
+    "test:coverage": "bun test --isolate --coverage ./tests/unit ./tests/integration",
     "compile:tests": "tsc -p tsconfig.test.json",
     "test:vscode": "bun run compile:tests && node out/tests/e2e/runTest.js",
     "test:all": "bun run test:unit && bun run test:integration",
     "quality-check": "bun run lint:check && bun run typecheck && bun run test:all",
     "pre-commit": "bun run quality-check",
     "update-proposed-api": "npx vscode-dts dev",
-    "package": "bunx vsce package",
+    "package": "bunx --bun vsce package",
     "local": "VERSION=$(node -p \"require('./package.json').version\") && code-insiders --install-extension ./copilot-boost-mode-$VERSION.vsix --force"
   },
   "devDependencies": {
@@ -149,7 +149,7 @@
     "@types/bun": "^1.2",
     "@types/glob": "^8.1.0",
     "@types/mocha": "^10.0.10",
-    "@types/vscode": "1.101",
+    "@types/vscode": "1.104.0",
     "@vscode/test-electron": "^2.5.2",
     "glob": "^11.0.3",
     "mocha": "^11.6.0",
@@ -162,6 +162,7 @@
     "@ai-sdk/groq": "^2.0.0",
     "@ai-sdk/openai": "^2.0.0",
     "@vscode/prompt-tsx-elements": "^0.1.0",
-    "ai": "^5.0.89"
+    "ai": "^5.0.89",
+    "zod": "^3.25.76"
   }
 }

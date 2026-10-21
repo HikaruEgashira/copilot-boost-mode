@@ -32,7 +32,7 @@ bun test
 bun test tests/unit/logger.test.ts
 
 # Run tests with verbose output
-bun test --reporter verbose
+bun test --isolate
 ```
 
 ## Architecture

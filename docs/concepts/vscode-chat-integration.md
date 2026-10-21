@@ -2,16 +2,16 @@
 
 ## 統合の仕組み
 
-VS CodeのproposedApi `chatProvider`を使用して、複数のAIプロバイダーをチャットUIに統合。
+VS Codeの公開Language Model Chat Provider APIを使用して、複数のAIプロバイダーをチャットUIに統合。
 
 ## 実装の詳細
 
 ### プロバイダー登録
 ```typescript
-vscode.lm.registerChatModelProvider("anthropic", new AnthropicProvider(apiKey), {
-  vendor: "boost",
-  name: "Anthropic",
-  // ...
+vscode.lm.registerLanguageModelChatProvider("boost", {
+  provideLanguageModelChatInformation: () => models,
+  provideLanguageModelChatResponse: respond,
+  provideTokenCount: countTokens,
 });
 ```
 
@@ -29,8 +29,7 @@ vscode.lm.registerChatModelProvider("anthropic", new AnthropicProvider(apiKey), 
 
 ## 制限
 
-- VS Code Insiders版が必要（proposed API使用のため）
-- GitHub Copilot Chat拡張機能が必要
+- VS Code 1.104以降が必要
 
 ## 実装の単純さ
 

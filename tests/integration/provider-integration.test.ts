@@ -1,3 +1,4 @@
+import { MockVSCode } from "../mocks/vscode-mock";
 import { describe, test, expect, beforeAll, afterAll, beforeEach, mock } from "bun:test";
 
 /**
@@ -12,26 +13,23 @@ import "../setup";
 const mockProviders = new Map<string, any>();
 
 const mockVSCode = {
+  ...MockVSCode.createMockVSCode(),
   lm: {
     registerChatProvider: mock((id: string, provider: any) => {
       mockProviders.set(id, provider);
       return { dispose: mock() };
     }),
-    registerChatModelProvider: mock((id: string, provider: any, _metadata?: any) => {
+    registerLanguageModelChatProvider: mock((id: string, provider: any, _metadata?: any) => {
       mockProviders.set(id, provider);
       return { dispose: mock() };
     }),
     selectChatModels: mock(async (criteria?: any) => {
       const models: any[] = [];
-      for (const [id, provider] of mockProviders) {
-        if (!criteria || !criteria.vendor || criteria.vendor === "boost") {
-          models.push({
-            id: `boost.${id}`,
-            vendor: "boost",
-            family: id,
-            maxInputTokens: 100000,
-            provider: provider
-          });
+      for (const [vendor, provider] of mockProviders) {
+        if (!criteria?.vendor || criteria.vendor === vendor) {
+          for (const model of await provider.provideLanguageModelChatInformation()) {
+            models.push({ ...model, vendor, provider });
+          }
         }
       }
       return models;
@@ -82,8 +80,8 @@ const mockVSCode = {
     executeCommand: mock()
   },
   window: {
-    showErrorMessage: mock(),
-    showInformationMessage: mock(),
+    showErrorMessage: mock(async () => undefined),
+    showInformationMessage: mock(async () => undefined),
     createOutputChannel: mock(() => ({
       appendLine: mock(),
       show: mock(),
@@ -112,12 +110,12 @@ mock.module("@ai-sdk/google", () => ({
 }));
 
 mock.module("ai", () => ({
-  streamText: mock(async (config: any) => ({
+  streamText: mock((config: any) => ({
     fullStream: {
       [Symbol.asyncIterator]: async function* () {
-        yield { type: "text-delta", textDelta: "Hello" };
-        yield { type: "text-delta", textDelta: " from " };
-        yield { type: "text-delta", textDelta: config.model?.model || "AI" };
+        yield { type: "text-delta", text: "Hello" };
+        yield { type: "text-delta", text: " from " };
+        yield { type: "text-delta", text: config.model?.model || "AI" };
         yield { type: "finish" };
       }
     }
@@ -146,28 +144,21 @@ describe("Provider Integration Tests", () => {
   });
 
   beforeEach(() => {
+    mockContext = new mockVSCode.ExtensionContext();
     mockProviders.clear();
     // Clear all mock calls
-    mockVSCode.lm.registerChatModelProvider.mockClear();
+    mockVSCode.lm.registerLanguageModelChatProvider.mockClear();
     mockVSCode.lm.selectChatModels.mockClear();
   });
 
   test("should activate extension and register all providers", async () => {
     activatedExtension = await activate(mockContext);
 
-    // Verify all providers are registered
-    expect(mockVSCode.lm.registerChatModelProvider).toHaveBeenCalledTimes(5);
+    expect(mockVSCode.lm.registerLanguageModelChatProvider).toHaveBeenCalledTimes(1);
+    const provider = mockProviders.get("boost");
+    expect(provider.provideLanguageModelChatInformation().map((model: any) => model.id))
+      .toEqual(["anthropic", "groq", "gemini", "openrouter", "openai"]);
 
-    // Verify provider IDs
-    const registeredIds = mockVSCode.lm.registerChatModelProvider.mock.calls.map(
-      (call: any) => call[0]
-    );
-
-    expect(registeredIds).toContain("anthropic");
-    expect(registeredIds).toContain("openai");
-    expect(registeredIds).toContain("groq");
-    expect(registeredIds).toContain("gemini");
-    expect(registeredIds).toContain("openrouter");
   });
 
   test("should select chat models for all providers", async () => {
@@ -184,7 +175,7 @@ describe("Provider Integration Tests", () => {
     await activate(mockContext);
 
     // Get a provider
-    const anthropicProvider = mockProviders.get("anthropic");
+    const anthropicProvider = mockProviders.get("boost");
     expect(anthropicProvider).toBeDefined();
 
     // Mock progress and cancellation token
@@ -195,15 +186,14 @@ describe("Provider Integration Tests", () => {
     };
 
     // Test provider response
-    await anthropicProvider.provideLanguageModelResponse(
-      [{ role: 1, content: "Hello" }],
+    await anthropicProvider.provideLanguageModelChatResponse({ id: "anthropic" },
+      [{ role: 1, content: [new mockVSCode.LanguageModelTextPart("Hello")] }],
       {},
-      "test-extension",
       mockProgress,
       mockToken
     );
 
-    expect(mockProgress.report).toHaveBeenCalled();
+    expect(mockProgress.report).toHaveBeenCalledWith(expect.objectContaining({ value: "Hello" }));
   });
 
   describe("Error Handling Integration", () => {
@@ -213,7 +203,7 @@ describe("Provider Integration Tests", () => {
 
       await activate(mockContext);
 
-      const anthropicProvider = mockProviders.get("anthropic");
+      const anthropicProvider = mockProviders.get("boost");
       const mockProgress = { report: mock() };
       const mockToken = {
         isCancellationRequested: false,
@@ -221,10 +211,9 @@ describe("Provider Integration Tests", () => {
       };
 
       await expect(
-        anthropicProvider.provideLanguageModelResponse(
-          [{ role: 1, content: "Hello" }],
+        anthropicProvider.provideLanguageModelChatResponse({ id: "anthropic" },
+          [{ role: 1, content: [new mockVSCode.LanguageModelTextPart("Hello")] }],
           {},
-          "test-extension",
           mockProgress,
           mockToken
         )
@@ -234,7 +223,7 @@ describe("Provider Integration Tests", () => {
     test("should handle malformed tool schemas", async () => {
       await activate(mockContext);
 
-      const anthropicProvider = mockProviders.get("anthropic");
+      const anthropicProvider = mockProviders.get("boost");
       const mockProgress = { report: mock() };
       const mockToken = {
         isCancellationRequested: false,
@@ -246,16 +235,15 @@ describe("Provider Integration Tests", () => {
         { name: "invalid_tool" } // Missing required fields
       ];
 
-      await anthropicProvider.provideLanguageModelResponse(
-        [{ role: 1, content: "Hello" }],
+      await anthropicProvider.provideLanguageModelChatResponse({ id: "anthropic" },
+        [{ role: 1, content: [new mockVSCode.LanguageModelTextPart("Hello")] }],
         { tools: malformedTools },
-        "test-extension",
         mockProgress,
         mockToken
       );
 
       // Should not throw, should handle gracefully
-      expect(mockProgress.report).toHaveBeenCalled();
+      expect(mockProgress.report).toHaveBeenCalledWith(expect.objectContaining({ value: "Hello" }));
     });
   });
 
@@ -271,30 +259,30 @@ describe("Provider Integration Tests", () => {
       };
 
       for (const providerId of providerIds) {
-        const provider = mockProviders.get(providerId);
+        const provider = mockProviders.get("boost");
         expect(provider).toBeDefined();
 
         // Each provider should handle basic text generation
-        await provider.provideLanguageModelResponse(
-          [{ role: 1, content: "Hello" }],
+        await provider.provideLanguageModelChatResponse({ id: providerId },
+          [{ role: 1, content: [new mockVSCode.LanguageModelTextPart("Hello")] }],
           {},
-          "test-extension",
           mockProgress,
           mockToken
         );
 
-        expect(mockProgress.report).toHaveBeenCalled();
+        expect(mockProgress.report).toHaveBeenCalledWith(expect.objectContaining({ value: "Hello" }));
         mockProgress.report.mockClear();
       }
     });
 
-    test("all providers should support token counting", () => {
+    test("all providers should support token counting", async () => {
+      await activate(mockContext);
       const providerIds = ["anthropic", "openai", "groq", "gemini", "openrouter"];
 
       for (const providerId of providerIds) {
-        const provider = mockProviders.get(providerId);
+        const provider = mockProviders.get("boost");
         expect(provider).toBeDefined();
-        expect(typeof provider.provideTokenCount).toBe("function");
+        expect(await provider.provideTokenCount({ id: providerId }, "Hello", {})).toBeGreaterThan(0);
       }
     });
   });
@@ -315,23 +303,22 @@ describe("Provider Integration Tests", () => {
 
       await activate(mockContext);
 
-      const anthropicProvider = mockProviders.get("anthropic");
+      const anthropicProvider = mockProviders.get("boost");
       const mockProgress = { report: mock() };
       const mockToken = {
         isCancellationRequested: false,
         onCancellationRequested: mock(() => ({ dispose: mock() }))
       };
 
-      await anthropicProvider.provideLanguageModelResponse(
-        [{ role: 1, content: "Hello" }],
+      await anthropicProvider.provideLanguageModelChatResponse({ id: "anthropic" },
+        [{ role: 1, content: [new mockVSCode.LanguageModelTextPart("Hello")] }],
         {},
-        "test-extension",
         mockProgress,
         mockToken
       );
 
       // Should use custom model configuration
-      expect(mockProgress.report).toHaveBeenCalled();
+      expect(mockProgress.report).toHaveBeenCalledWith(expect.objectContaining({ value: "Hello" }));
     });
   });
 

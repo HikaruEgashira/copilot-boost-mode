@@ -15,15 +15,10 @@ describe("Configuration", () => {
     expect(packageJson.engines.vscode).toMatch(/^\^1\.\d+\.\d+$/);
   });
 
-  test("should have required extension dependencies", () => {
-    expect(packageJson.extensionDependencies).toBeDefined();
-    expect(packageJson.extensionDependencies).toContain("github.copilot-chat");
-  });
-
-  test("should have language model configuration", () => {
-    expect(packageJson.contributes).toBeDefined();
-    expect(packageJson.contributes.languageModels).toBeDefined();
-    expect(packageJson.contributes.languageModels.vendor).toBe("boost");
+  test("should declare the public language model provider", () => {
+    expect(packageJson.contributes.languageModelChatProviders).toEqual([
+      { vendor: "boost", displayName: "Copilot Boost Mode" }
+    ]);
   });
 
   test("should have all required commands", () => {
@@ -80,9 +75,9 @@ describe("Configuration", () => {
     const scripts = packageJson.scripts;
     expect(scripts).toBeDefined();
 
-    expect(scripts.test).toBe("bun test");
-    expect(scripts["test:unit"]).toBe("bun test tests/unit");
-    expect(scripts["test:integration"]).toBe("bun test tests/integration");
-    expect(scripts["test:coverage"]).toBe("bun test --coverage");
+    expect(scripts.test).toBe("bun test --isolate ./tests/unit ./tests/integration");
+    expect(scripts["test:unit"]).toBe("bun test --isolate tests/unit");
+    expect(scripts["test:integration"]).toBe("bun test --isolate tests/integration");
+    expect(scripts["test:coverage"]).toBe("bun test --isolate --coverage ./tests/unit ./tests/integration");
   });
 });

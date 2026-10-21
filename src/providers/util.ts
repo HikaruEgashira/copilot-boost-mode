@@ -4,17 +4,17 @@ import * as vscode from "vscode";
 import { logger } from "../logger";
 
 function isLanguageModelToolResultPart(
-  part: vscode.LanguageModelTextPart | vscode.LanguageModelToolResultPart | vscode.LanguageModelToolCallPart
+  part: vscode.LanguageModelChatRequestMessage["content"][number]
 ): part is vscode.LanguageModelToolResultPart {
   let _toolResultPart: vscode.LanguageModelToolResultPart;
-  if ("callId" in part && "content" in part) {
+  if (part !== null && typeof part === "object" && "callId" in part && "content" in part) {
     _toolResultPart = part as vscode.LanguageModelToolResultPart;
     return true;
   }
   return false;
 }
 
-export const convertChatToModelMessage = (message: vscode.LanguageModelChatMessage): ModelMessage => {
+export const convertChatToModelMessage = (message: vscode.LanguageModelChatRequestMessage): ModelMessage => {
   // Convert a `vscode.LanguageModelChatMessage` to a `UserMessage` or `ToolMessage`
   if (message.role === vscode.LanguageModelChatMessageRole.User) {
     const toolResultParts: ToolResultPart[] = [];
@@ -26,14 +26,17 @@ export const convertChatToModelMessage = (message: vscode.LanguageModelChatMessa
         toolResultParts.push({
           type: "tool-result",
           toolCallId: item.callId,
-          output: { type: "text" as const, value: item.content
-            .map((item) => {
-              if (item instanceof vscode.LanguageModelTextPart) {
-                return item.value;
-              }
-              return JSON.stringify(item);
-            })
-            .join(" ,") },
+          output: {
+            type: "text" as const,
+            value: item.content
+              .map((item) => {
+                if (item instanceof vscode.LanguageModelTextPart) {
+                  return item.value;
+                }
+                return JSON.stringify(item);
+              })
+              .join(" ,"),
+          },
           toolName: "test",
         });
       }
@@ -94,7 +97,7 @@ export const convertChatToModelMessage = (message: vscode.LanguageModelChatMessa
  * @returns Object with processed tools and hasTools flag
  */
 export const processTools = (
-  options: vscode.LanguageModelChatRequestOptions,
+  options: vscode.ProvideLanguageModelChatResponseOptions,
   providerName: string,
   toolNameTransform?: (name: string) => string
 ): { tools: Record<string, Tool>; hasTools: boolean } => {

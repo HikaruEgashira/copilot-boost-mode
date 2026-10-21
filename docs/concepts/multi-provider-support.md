@@ -29,7 +29,7 @@ VS CodeでGitHub Copilot以外のAIプロバイダーを使えるようにする
 ## 技術的実装
 
 - Vercel AI SDKを使用
-- VS CodeのchatProvider APIに対応
+- VS Codeの公開Language Model Chat Provider APIに対応
 - 各プロバイダーを統一インターフェースで提供
 
 ## ユーザーができること

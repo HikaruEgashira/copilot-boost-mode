@@ -13,7 +13,6 @@ suite("Tool Calling Bypass Test Suite", () => {
       this.skip();
     }
 
-    console.log("Using real API key from environment:", process.env.ANTHROPIC_API_KEY?.substring(0, 20) + "...");
 
     // First, let's set up the API key properly using the VS Code secrets API
     console.log("--- Setting up API key via VS Code Secrets ---");

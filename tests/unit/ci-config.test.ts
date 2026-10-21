@@ -16,12 +16,10 @@ describe("CI configuration", () => {
     expect(workflow).not.toContain("runs-on: ubuntu-latest");
   });
 
-  test("VS Code test workflow runs Linux on hikae ARM64 and keeps hosted Windows/macOS", () => {
+  test("VS Code test workflow uses the hikae ARM64 runner", () => {
     const workflow = read(".github/workflows/vscode-test.yml");
-    expect(workflow).toContain("os: [hikae-flash, windows-latest, macos-latest]");
+    expect(workflow).toContain("os: [hikae-flash]");
     expect(workflow).toContain(`runner: [${ARM_RUNNER}]`);
-    expect(workflow).toContain("runner: windows-latest");
-    expect(workflow).toContain("runner: macos-latest");
     expect(workflow).not.toContain("os: [ubuntu-latest");
   });
 

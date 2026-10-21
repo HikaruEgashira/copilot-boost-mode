@@ -106,30 +106,4 @@ suite("VS Code Secrets API Test Suite", () => {
     assert.ok(true, "VS Code Secrets API exploration completed");
   });
 
-  test("Test environment variable injection", async function() {
-    this.timeout(30000);
-
-    console.log("=== Environment Variable Injection Test ===");
-
-    // Check if we can inject environment variables that the provider might pick up
-    console.log("Current ANTHROPIC_API_KEY:", process.env.ANTHROPIC_API_KEY ? "Set" : "Not set");
-
-    // Try to set it programmatically
-    if (!process.env.ANTHROPIC_API_KEY) {
-      console.log("Setting test API key...");
-      process.env.ANTHROPIC_API_KEY = "sk-ant-test-key-for-testing-tool-calling-functionality-123456789";
-    }
-
-    console.log("After setting - ANTHROPIC_API_KEY:", process.env.ANTHROPIC_API_KEY ? "Set" : "Not set");
-
-    // Check if other environment variables might be relevant
-    const envKeys = Object.keys(process.env).filter(key =>
-      key.includes('ANTHROPIC') ||
-      key.includes('VSCODE') ||
-      key.includes('TEST')
-    );
-    console.log("Relevant environment variables:", envKeys);
-
-    assert.ok(true, "Environment variable injection test completed");
-  });
 });
