@@ -18,6 +18,7 @@
   "enabledApiProposals": [
     "chatProvider"
   ],
+  "extensionDependencies": ["github.copilot-chat"],
   "activationEvents": [
     "onStartupFinished"
   ],

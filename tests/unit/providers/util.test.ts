@@ -110,7 +110,7 @@ describe("Provider Utilities", () => {
           { type: "text", text: "I'll help you" },
           {
             type: "tool-call",
-            args: { query: "test" },
+            input: { query: "test" },
             toolName: "search",
             toolCallId: "call_123"
           }
@@ -131,7 +131,7 @@ describe("Provider Utilities", () => {
       expect(result.role).toBe("assistant");
       expect(result.content[0]).toEqual({
         type: "tool-call",
-        args: "invalid json",
+        input: "invalid json",
         toolName: "search",
         toolCallId: "call_123"
       });
@@ -175,7 +175,7 @@ describe("Provider Utilities", () => {
       expect(result.hasTools).toBe(true);
       expect(result.tools).toHaveProperty("search");
       expect(result.tools.search).toEqual({
-        parameters: options.tools[0].inputSchema,
+        inputSchema: options.tools[0].inputSchema,
         description: "Search for information"
       });
     });
@@ -194,7 +194,7 @@ describe("Provider Utilities", () => {
 
       expect(result.hasTools).toBe(true);
       expect(result.tools.simple_tool).toEqual({
-        parameters: { type: "object", properties: {} },
+        inputSchema: { type: "object", properties: {} },
         description: "A simple tool"
       });
       expect(mockLogger.warn).toHaveBeenCalledWith(
@@ -267,7 +267,7 @@ describe("Provider Utilities", () => {
 
   describe("createGeminiToolName", () => {
     test("should sanitize tool names for Gemini", () => {
-      expect(createGeminiToolName("search-data")).toBe("search_data");
+      expect(createGeminiToolName("search-data")).toBe("search-data");
       expect(createGeminiToolName("complex@tool#name")).toBe("complex_tool_name");
       expect(createGeminiToolName("123invalid")).toBe("_123invalid");
     });
@@ -286,7 +286,7 @@ describe("Provider Utilities", () => {
 
     test("should handle empty and invalid names", () => {
       expect(createGeminiToolName("")).toBe("_");
-      expect(createGeminiToolName("@#$%")).toBe("_____");
+      expect(createGeminiToolName("@#$%")).toBe("____");
     });
   });
 });

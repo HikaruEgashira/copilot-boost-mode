@@ -1,11 +1,12 @@
+import { providerContext } from "../../utils/provider-test-base";
 import { describe, test, expect, beforeEach, mock } from "bun:test";
 
 // Mock dependencies
-const mockCreateAnthropic = mock(() => ({}));
-const mockStreamText = mock(() => Promise.resolve({
-  textStream: (async function* (): AsyncGenerator<string, void, unknown> {
-    yield "Hello";
-    yield " world";
+const mockCreateAnthropic = mock(() => (name: string) => ({modelId:name}));
+const mockStreamText = mock(() => ({
+  fullStream: (async function* () {
+    yield { type: "text-delta", text: "Hello" };
+    yield { type: "text-delta", text: " world" };
   })(),
   toolCalls: [],
   toolResults: []
@@ -73,6 +74,7 @@ const mockVscode = {
   commands: mockCommands,
   window: mockWindow,
   workspace: mockWorkspace,
+  LanguageModelTextPart: class { constructor(public value: string) {} },
   LanguageModelChatMessage: class {
     constructor(public role: number, public content: string) {}
   },
@@ -111,20 +113,20 @@ describe("AnthropicProvider", () => {
   });
 
   describe("constructor", () => {
-    test("should initialize with API key", () => {
-      provider = new AnthropicProvider("test-api-key");
-      expect(provider.apiKey).toBe("test-api-key");
+    test("should initialize with API key", async () => {
+      provider = new AnthropicProvider(providerContext("test-api-key") as any);
+      expect(await (provider as any).context.secrets.get("AnthropicCopilotBoostApiKey")).toBe("test-api-key");
     });
 
-    test("should initialize without API key", () => {
-      provider = new AnthropicProvider(undefined);
-      expect(provider.apiKey).toBeUndefined();
+    test("should initialize without API key", async () => {
+      provider = new AnthropicProvider(providerContext(undefined) as any);
+      expect(await (provider as any).context.secrets.get("AnthropicCopilotBoostApiKey")).toBeUndefined();
     });
   });
 
   describe("provideLanguageModelResponse", () => {
     test("should throw error when no API key is set", async () => {
-      provider = new AnthropicProvider(undefined);
+      provider = new AnthropicProvider(providerContext(undefined) as any);
 
       const messages = [new mockVscode.LanguageModelChatMessage(1, "Hello")];
       const options = {};
@@ -148,12 +150,12 @@ describe("AnthropicProvider", () => {
     });
 
     test("should get model configuration", async () => {
-      provider = new AnthropicProvider("test-api-key");
+      provider = new AnthropicProvider(providerContext("test-api-key") as any);
 
       // Mock successful streaming response
-      mockStreamText.mockResolvedValueOnce({
-        textStream: (async function* (): AsyncGenerator<string, void, unknown> {
-          yield "Hello";
+      mockStreamText.mockReturnValueOnce({
+        fullStream: (async function* () {
+          yield { type: "text-delta", text: "Hello" };
         })(),
         toolCalls: [],
         toolResults: []
@@ -175,12 +177,12 @@ describe("AnthropicProvider", () => {
     });
 
     test("should use default model when config is not set", async () => {
-      provider = new AnthropicProvider("test-api-key");
+      provider = new AnthropicProvider(providerContext("test-api-key") as any);
       mockWorkspaceConfig.get.mockReturnValueOnce("claude-sonnet-4-20250514");
 
-      mockStreamText.mockResolvedValueOnce({
-        textStream: (async function* (): AsyncGenerator<string, void, unknown> {
-          yield "Hello";
+      mockStreamText.mockReturnValueOnce({
+        fullStream: (async function* () {
+          yield { type: "text-delta", text: "Hello" };
         })(),
         toolCalls: [],
         toolResults: []
@@ -199,17 +201,17 @@ describe("AnthropicProvider", () => {
 
       expect(mockStreamText).toHaveBeenCalledWith(
         expect.objectContaining({
-          model: expect.stringContaining("claude")
+          model: expect.objectContaining({ modelId: expect.stringContaining("claude") })
         })
       );
     });
 
     test("should convert messages using util function", async () => {
-      provider = new AnthropicProvider("test-api-key");
+      provider = new AnthropicProvider(providerContext("test-api-key") as any);
 
-      mockStreamText.mockResolvedValueOnce({
-        textStream: (async function* (): AsyncGenerator<string, void, unknown> {
-          yield "Hello";
+      mockStreamText.mockReturnValueOnce({
+        fullStream: (async function* () {
+          yield { type: "text-delta", text: "Hello" };
         })(),
         toolCalls: [],
         toolResults: []
@@ -233,16 +235,16 @@ describe("AnthropicProvider", () => {
     });
 
     test("should process tools when provided", async () => {
-      provider = new AnthropicProvider("test-api-key");
+      provider = new AnthropicProvider(providerContext("test-api-key") as any);
 
       mockProcessTools.mockReturnValueOnce({
         tools: { search: { parameters: {}, description: "Search" } },
         hasTools: true
       });
 
-      mockStreamText.mockResolvedValueOnce({
-        textStream: (async function* (): AsyncGenerator<string, void, unknown> {
-          yield "Hello";
+      mockStreamText.mockReturnValueOnce({
+        fullStream: (async function* () {
+          yield { type: "text-delta", text: "Hello" };
         })(),
         toolCalls: [],
         toolResults: []
@@ -266,12 +268,12 @@ describe("AnthropicProvider", () => {
     });
 
     test("should report progress during streaming", async () => {
-      provider = new AnthropicProvider("test-api-key");
+      provider = new AnthropicProvider(providerContext("test-api-key") as any);
 
-      mockStreamText.mockResolvedValueOnce({
-        textStream: (async function* (): AsyncGenerator<string, void, unknown> {
-          yield "Hello";
-          yield " world";
+      mockStreamText.mockReturnValueOnce({
+        fullStream: (async function* () {
+          yield { type: "text-delta", text: "Hello" };
+          yield { type: "text-delta", text: " world" };
         })(),
         toolCalls: [],
         toolResults: []
@@ -289,12 +291,12 @@ describe("AnthropicProvider", () => {
       );
 
       expect(mockProgress.report).toHaveBeenCalledTimes(2);
-      expect(mockProgress.report).toHaveBeenCalledWith({ fragment: "Hello" });
-      expect(mockProgress.report).toHaveBeenCalledWith({ fragment: " world" });
+      expect(mockProgress.report).toHaveBeenCalledWith({ index: 0, part: new mockVscode.LanguageModelTextPart("Hello") });
+      expect(mockProgress.report).toHaveBeenCalledWith({ index: 0, part: new mockVscode.LanguageModelTextPart(" world") });
     });
 
     test("should handle cancellation", async () => {
-      provider = new AnthropicProvider("test-api-key");
+      provider = new AnthropicProvider(providerContext("test-api-key") as any);
 
       const cancelledToken = {
         isCancellationRequested: true,
@@ -317,9 +319,9 @@ describe("AnthropicProvider", () => {
     });
 
     test("should handle streaming errors", async () => {
-      provider = new AnthropicProvider("test-api-key");
+      provider = new AnthropicProvider(providerContext("test-api-key") as any);
 
-      mockStreamText.mockRejectedValueOnce(new Error("API Error"));
+      mockStreamText.mockImplementationOnce(() => { throw new Error("API Error"); });
 
       const messages = [new mockVscode.LanguageModelChatMessage(1, "Hello")];
       const options = {};
@@ -342,7 +344,7 @@ describe("AnthropicProvider", () => {
 
   describe("API key error handling", () => {
     test("should show API key setup flow", async () => {
-      provider = new AnthropicProvider(undefined);
+      provider = new AnthropicProvider(providerContext(undefined) as any);
 
       const messages = [new mockVscode.LanguageModelChatMessage(1, "Hello")];
 
