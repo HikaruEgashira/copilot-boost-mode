@@ -14,11 +14,11 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [hikae-flash]
+        os: [hikae-2vcpu-ubuntu-2404-arm]
         vscode-version: [stable, insiders]
         include:
-          - os: hikae-flash
-            runner: [self-hosted, linux, arm64, hikae-flash]
+          - os: hikae-2vcpu-ubuntu-2404-arm
+            runner: hikae-2vcpu-ubuntu-2404-arm
         
     steps:
     - name: Checkout code
